@@ -14,6 +14,7 @@ function getTitle(name) {
                             .then(response => response.json())
                             .then(data=> {
                                 console.log(data)
+                                displayMainTitle(data);
                             });
                 } else { console.log("Error: No results found"); }
             });
@@ -31,6 +32,15 @@ var formSubmitHandler = function(event) {
         alert("Please enter a title!");
     }
 };
+
+function displayMainTitle(data) {
+    $(".main-title").remove();
+    var mainTitleDiv = $("<div></div>", { id: "main-title", class: "main-title col s12 m6 l6 xl6" });
+    mainTitleDiv.appendTo("#row-1");
+    var mainTitleData = $("<p></p>", { id: "main-data", class: "main-data" });
+    mainTitleData.html(data.title + "<br>" + "<em>" + data.year + "</em>" + "<br>");
+    mainTitleData.appendTo(mainTitleDiv);
+}
 
 // query selectors for the search by title form
 var searchFormEl = document.querySelector("#search-form");
