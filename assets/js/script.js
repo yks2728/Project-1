@@ -32,12 +32,6 @@ var formSubmitHandler = function(event) {
     }
 };
 
-// dropdown functionality
-document.addEventListener('DOMContentLoaded', function(){
-    var elems = document.querySelectorAll('.dropdown-trigger');
-    var instances = M.Dropdown.init(elems, options);
-});
-
 
 // query selectors for the search by title form
 var searchFormEl = document.querySelector("#search-form");
