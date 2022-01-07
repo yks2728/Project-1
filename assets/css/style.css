@@ -1,6 +1,4 @@
 .search-form {
-    display: flex !important;
-    flex-flow: row wrap !important;
     width: 50%;
     padding: 15px;
     margin: 5px 0;
@@ -27,4 +25,3 @@
     color: #383838;
     font-size: 40px;
   }
-       
