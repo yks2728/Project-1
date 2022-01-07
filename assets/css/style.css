@@ -1,0 +1,30 @@
+.search-form {
+    display: flex !important;
+    flex-flow: row wrap !important;
+    width: 50%;
+    padding: 15px;
+    margin: 5px 0;
+    border-radius: 12px;
+    border: 6px solid #9ccc65;
+    background-image: linear-gradient(45deg, #d4d4d4 0%, #c0c0c0 35%, #a3a3a3 80%)
+}
+
+.input-text {
+    font-family: "PT Sans", Verdana, Geneva;
+    font-size: 30px !important;
+}
+
+.input-field input[type=text]:focus {
+    border-bottom: 3px solid#c8e6c9;
+}
+
+.input-field .prefix {
+    color: #929292;
+    font-size: 40px;
+  }
+       
+.input-field .prefix.active {
+    color: #383838;
+    font-size: 40px;
+  }
+       
