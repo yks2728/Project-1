@@ -1,7 +1,15 @@
+html {
+    height: 100%;
+}
+
+body {
+    background-image: linear-gradient(90deg, #141414 0%, #2c2c2c 45%, #474747 99%);
+    margin: 0;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+}
+
 .search-form {
-    display: flex !important;
-    flex-flow: row wrap !important;
-    width: 50%;
     padding: 15px;
     margin: 5px 0;
     border-radius: 12px;
@@ -27,4 +35,40 @@
     color: #383838;
     font-size: 40px;
   }
-       
+
+.main-title {
+    width: 49% !important; 
+    margin-top: 1rem !important;
+    font-size: 30px;
+    font-family: "Balsamiq Sans", 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', Geneva, sans-serif;
+    border-radius: 12px;
+    border: 6px solid #9ccc65;
+    background-image: linear-gradient(45deg, #cacaca 0%, #afafaf 35%, #969696 75%);
+    vertical-align: center;
+    text-align: center;
+  }
+
+
+/* small desktops */
+@media screen and (max-width: 980px) {
+    .main-title {
+        width: 49% !important;
+        margin-top: 1rem !important;
+    }
+}
+
+/* tablets */
+@media screen and (max-width: 768px) { 
+    .main-title {
+        width: 49% !important;
+        margin-top: 1rem !important;
+    }
+}
+
+/* phones */ 
+@media screen and (max-width: 575px) { 
+    .main-title {
+        width: 100% !important;
+        margin-top: .5rem !important;
+    }
+}
