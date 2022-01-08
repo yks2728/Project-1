@@ -11,7 +11,6 @@ body {
 
 .search-form {
     padding: 15px;
-    margin: 5px 0;
     border-radius: 12px;
     border: 6px solid #9ccc65;
     background-image: linear-gradient(45deg, #d4d4d4 0%, #c0c0c0 35%, #a3a3a3 80%)
@@ -37,38 +36,47 @@ body {
   }
 
 .main-title {
-    width: 49% !important; 
-    margin-top: 1rem !important;
     font-size: 30px;
     font-family: "Balsamiq Sans", 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', Geneva, sans-serif;
     border-radius: 12px;
-    border: 6px solid #9ccc65;
-    background-image: linear-gradient(45deg, #cacaca3b 0%, #afafaf3f 35%, #9696963b 75%);
+    border: 6px solid #0277bd;
+    background-image: linear-gradient(45deg, #cacaca 0%, #afafaf 35%, #969696 75%);
     vertical-align: center;
     text-align: center;
   }
 
+.modal-content p {
+    font-size: 20px;
+    font-family: "Asap", 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', Geneva, sans-serif;
+}
+
+.secondary-data {
+    font-size: 22px;
+    font-family: "PT Sans", Verdana, Geneva;
+    color: whitesmoke;
+}
+
+.gold {
+    font-size: 24px;
+    color: #FFD700;
+}
 
 /* small desktops */
 @media screen and (max-width: 980px) {
-    .main-title {
-        width: 49% !important;
-        margin-top: 1rem !important;
-    }
+
 }
 
 /* tablets */
 @media screen and (max-width: 768px) { 
-    .main-title {
-        width: 49% !important;
-        margin-top: 1rem !important;
+    * {
+        overflow-x: hidden;
     }
 }
 
-/* phones */ 
+/* phones */
 @media screen and (max-width: 575px) { 
-    .main-title {
-        width: 100% !important;
-        margin-top: .5rem !important;
+    * {
+       overflow-x: hidden;
     }
 }
+
