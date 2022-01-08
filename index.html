@@ -15,19 +15,20 @@
 
 <body>
     <header>
-        <ul id='dropdown1' class='dropdown-content'>
-            <li><a href="#!"><i class="material-icons">movie</i>Search By Title</a></li>
-            <li class="divider" tabindex="=-1"></li>
-            <li><a href="#!"><i class="material-icons">movie_filter</i>Search By Keyword</a></li>
-        </ul>
         <nav>
             <div class="nav-wrapper">
-                <a href="#!" class="brand-logo">Screen Title Scanner</a>
-                <ul class="right hide-on-med-and-down">
-                    <li><a class="dropdown-trigger" href="#!" data-target="dropdown1">Search By<i class="material-icons right">arrow_drop_down</i></i></a></li>
+                <a href="#" class="brand-logo">Screen Title Scanner</a>
+                <ul id="nav-mobile" class="right hide-on-med-and-down">
                 </ul>
             </div>
         </nav>
+            <div class="dropdown">
+                <button onclick="myFunction()" class="dropbtn">Search By</button>
+                <div id="myDropdown" class="dropdown-content">
+                    <a href="#">Title</a>
+                    <a href="#">Keyword</a>
+                </div>
+            </div>
     </header>
     <div class="container">
         <div class="row">
