@@ -3,7 +3,7 @@ html {
 }
 
 body {
-    background-image: linear-gradient(90deg, #141414 0%, #2c2c2c 45%, #5f5f5f 99%);
+    background-image: linear-gradient(90deg, #141414 0%, #2c2c2c 45%, #474747 99%);
     margin: 0;
     background-repeat: no-repeat;
     background-attachment: fixed;
@@ -36,16 +36,39 @@ body {
     font-size: 40px;
   }
 
-  .main-title {
-    font-size: 32px;
+.main-title {
+    width: 49% !important; 
+    margin-top: 1rem !important;
+    font-size: 30px;
     font-family: "Balsamiq Sans", 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', Geneva, sans-serif;
-    padding: 15px;
-    margin-top: 10px;
-    margin: 5px 0;
     border-radius: 12px;
     border: 6px solid #9ccc65;
-    background-image: linear-gradient(37deg, #c0c0c0 0%, #9c9c9c 35%, #727272 80%);
+    background-image: linear-gradient(45deg, #cacaca 0%, #afafaf 35%, #969696 75%);
     vertical-align: center;
     text-align: center;
   }
-       
+
+
+/* small desktops */
+@media screen and (max-width: 980px) {
+    .main-title {
+        width: 49% !important;
+        margin-top: 1rem !important;
+    }
+}
+
+/* tablets */
+@media screen and (max-width: 768px) { 
+    .main-title {
+        width: 49% !important;
+        margin-top: 1rem !important;
+    }
+}
+
+/* phones */ 
+@media screen and (max-width: 575px) { 
+    .main-title {
+        width: 100% !important;
+        margin-top: .5rem !important;
+    }
+}
