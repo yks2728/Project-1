@@ -36,9 +36,6 @@ var formSubmitHandler = function(event) {
 
 
 
-
-
-
 // query selectors for the search by title form
 var searchFormEl = document.querySelector("#search-form");
 var searchNameEl = document.querySelector("#name");
