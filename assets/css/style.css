@@ -8,7 +8,8 @@ body {
     background-repeat: no-repeat;
     background-attachment: fixed;
 }
-h2 {
+
+h1 {
     font-family: "Work Sans", sans-serif;
     font-weight: 800;
     font-size: 5em;
@@ -16,24 +17,22 @@ h2 {
     line-height: 0.9em;
     margin-left: auto;
     margin-right: auto;
-    margin-top: 1.5em;
-    margin-top: calc(50vh - 1em);
 }
 
 .gold-and-silver-text {
-  background: #a9a9a9;
-  background-color: #a9a9a9;
+  background: #8b4513;
+  background-color: #8b4513;
   background-clip: content-box;
   background: conic-gradient(
-    #8b4513 1.122%,
-    #a9a9a9 16.666%,
-    #a9a9a9 33.333%,
-    #696969 33.333%,
-    #696969 50%,
-    #778899 50%,
-    #778899 66.666%,
-    #FAFAD2 66.666%,
-    #FAFAD2 83.333%,
+    yellow 16.666%,
+    #B8860B 16.666%,
+    #B8860B 33.333%,
+    #EEE8AA 33.333%,
+    #EEE8AA 50%,
+    gold 50%,
+    gold 66.666%,
+    #DAA520 66.666%,
+    #daa520 83.333%,
     #FFD700 83.333%);
   background-size: 57%;
   background-repeat: repeat;
