@@ -8,7 +8,74 @@ body {
     background-repeat: no-repeat;
     background-attachment: fixed;
 }
+h2 {
+    font-family: "Work Sans", sans-serif;
+    font-weight: 800;
+    font-size: 5em;
+    width: 5em;
+    line-height: 0.9em;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 1.5em;
+    margin-top: calc(50vh - 1em);
+}
 
+.gold-and-silver-text {
+  background: #a9a9a9;
+  background-color: #a9a9a9;
+  background-clip: content-box;
+  background: conic-gradient(
+    #8b4513 1.122%,
+    #a9a9a9 16.666%,
+    #a9a9a9 33.333%,
+    #696969 33.333%,
+    #696969 50%,
+    #778899 50%,
+    #778899 66.666%,
+    #FAFAD2 66.666%,
+    #FAFAD2 83.333%,
+    #FFD700 83.333%);
+  background-size: 57%;
+  background-repeat: repeat;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gold-and-silver-text-animation-rev 0.5s ease forwards;
+  cursor: pointer;
+}
+
+.gold-and-silver-text:hover {
+    animation: gold-and-silver-text-animation 0.5s ease forwards;
+}
+
+@keyframes gold-and-silver-text-animation{
+    0% {
+        background-size: 57%;
+        background-position: 0 0;
+    }
+    20% {
+        background-size: 57%;
+        background-position: 0 1em;
+    }
+    100% {
+        background-size: 300%;
+        background-position: -9em 1em;
+    }
+}
+
+@keyframes gold-and-silver-text-animation-rev{
+    0% {
+        background-size: 300%;
+        background-position: -9em 1em;
+    }
+    20% {
+        background-size: 57%;
+        background-position: 0 1em;
+    }
+    100% {
+        background-size: 57%;
+        background-position: 0 0;
+    }
+}
 .search-form {
     padding: 15px;
     border-radius: 12px;
