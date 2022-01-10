@@ -9,6 +9,76 @@ body {
     background-attachment: fixed;
 }
 
+h1 {
+    font-family: "Work Sans", sans-serif;
+    font-weight: 800;
+    font-size: 5em;
+    width: 5em;
+    line-height: 0.9em;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.gold-and-silver-text {
+  background: #8b4513;
+  background-color: #8b4513;
+  background-clip: content-box;
+  background: conic-gradient(
+    yellow 16.666%,
+    #B8860B 16.666%,
+    #B8860B 33.333%,
+    #EEE8AA 33.333%,
+    #EEE8AA 50%,
+    gold 50%,
+    gold 66.666%,
+    #DAA520 66.666%,
+    #daa520 83.333%,
+    #FFD700 83.333%);
+  background-size: 57%;
+  background-repeat: repeat;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gold-and-silver-text-animation-rev 0.5s ease forwards;
+  cursor: pointer;
+}
+
+.gold-and-silver-text:hover {
+    animation: gold-and-silver-text-animation 0.5s ease forwards;
+}
+
+@keyframes gold-and-silver-text-animation{
+    0% {
+        background-size: 57%;
+        background-position: 0 0;
+    }
+    20% {
+        background-size: 57%;
+        background-position: 0 1em;
+    }
+    100% {
+        background-size: 300%;
+        background-position: -9em 1em;
+    }
+}
+
+@keyframes gold-and-silver-text-animation-rev{
+    0% {
+        background-size: 300%;
+        background-position: -9em 1em;
+    }
+    20% {
+        background-size: 57%;
+        background-position: 0 1em;
+    }
+    100% {
+        background-size: 57%;
+        background-position: 0 0;
+    }
+}
+.material-icons {
+    color: goldenrod;
+}
+
 .search-form {
     padding: 15px;
     border-radius: 12px;
