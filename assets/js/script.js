@@ -140,7 +140,7 @@ function displayMainTitle(data) {
         var buttonDiv = $("<div></div>", { id: "button-div", class: "button-div col s12" });
         $(buttonDiv).appendTo("#row-3")
             for (let i = 0; i < data.genreList.length; i++) {
-                var currentBtn = JSON.stringify(data.genreList[i].value.replace(/['"]+/g, ''));
+                var currentBtn = JSON.stringify(data.genreList[i].value.replace(/\"/g, ""));
                 $(buttonDiv).append("<button id='btn" + currentBtn + "' class='inline waves-effect waves-light btn-small'>" + currentBtn + "</button>");
             }
     }
@@ -150,8 +150,6 @@ function displayMainTitle(data) {
 
     var newGenre = true;
 }
-
-
 
 // query selectors for the search by title form
 var searchFormEl = document.querySelector("#search-form");
