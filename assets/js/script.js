@@ -2,14 +2,27 @@ $(document).ready(function(){
     $('.modal').modal();
   });
 
-var apiKey = "k_esgvbo9o";
+//var apiKey = "k_esgvbo9o";
+var apiKey = "k_n93546yy";
 var searchCount = localStorage.getItem("searchCount");
+var isNewSearch = true;
+var isNewGenre = true;
 
 if (!searchCount) {
     var searchCount = 0;
     searchCount = window.searchCount;
 } else {
     searchCount = window.searchCount;
+}
+
+// initialize empty arrays and obj. if it's a new search, otherwise get from LS
+if (window.searchCount === 0) {
+    var titleData = [];
+    var dataElement = {};
+} else {
+    var titleData = localStorage.getItem(titleData);
+    titleData = JSON.parse(titleData);
+    var dataElement = {};
 }
 
 function getTitle(name) {
@@ -72,27 +85,18 @@ function displayMainTitle(data) {
     $(secondaryDataDiv).append("<button data-target='plot' class='btn modal-trigger'>Display plot summary</button>"); 
 
     function saveTitleData(data) {
-        // initialize empty arrays and obj. if it's a new search, otherwise get from LS
-        if (window.searchCount === 0) {
-            var titleData = [];
-            var dataElement = {};
-            var isNewSearch = true;
-        } else {
-            var titleData = localStorage.getItem(titleData);
-            titleData = JSON.parse(titleData);
-            var dataElement = {};
-                // confirm if a title has already been searched for
-                for (i = 0; i < titleData.length; i++) {
-                    if (titleData[i].title === data.title) {
-                        var isNewSearch = false;
-                        break;
-                    } else {
-                        var isNewSearch = true;
-                    }
+        if (titleData.length > 0) {
+            // confirm if a title has already been searched for
+            for (i = 0; i < titleData.length; i++) {
+                if (titleData[i].title === data.title) {
+                    isNewSearch = false;
+                } else {
+                    isNewSearch = true;
                 }
+            }
         }
 
-        if (isNewSearch = true) {
+        if (isNewSearch === true) {
             window.searchCount += 1;
         }
 
@@ -136,19 +140,18 @@ function displayMainTitle(data) {
         localStorage.setItem("titleData", JSON.stringify(titleData));
     }
 
-    if (isNewSearch = true) {
-        var buttonDiv = $("<div></div>", { id: "button-div", class: "button-div col s12" });
-        $(buttonDiv).appendTo("#row-3")
-            for (let i = 0; i < data.genreList.length; i++) {
-                var currentBtn = JSON.stringify(data.genreList[i].value.replace(/['"]+/g, ''));
-                $(buttonDiv).append("<button id='btn" + currentBtn + "' class='inline waves-effect waves-light btn-small'>" + currentBtn + "</button>");
-            }
+    if (isNewSearch === true) {
+        for (let i = 0; i < data.genreList.length; i++) {
+            var currentBtn = JSON.stringify(data.genreList[i].value)
+            currentBtn = currentBtn.replace(/\"/g, "");
+            $("#button-div").append("<button id='btn" + currentBtn + "' class='inline waves-effect waves-light btn-small'>" + currentBtn + "</button>");  
+        }
     }
+    // run function to increase count (if isNewSearch) and set items to LS
+    saveTitleData(data); 
 
     titleData = localStorage.getItem("titleData")
     titleData = JSON.parse(titleData);
-
-    var newGenre = true;
 }
 
 // query selectors for the search by title form
