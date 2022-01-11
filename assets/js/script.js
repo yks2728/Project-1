@@ -1,6 +1,6 @@
 $(document).ready(function(){
     $('.modal').modal();
-  });
+});
 
 //var apiKey = "k_esgvbo9o";
 var apiKey = "k_n93546yy";
@@ -81,8 +81,7 @@ function displayMainTitle(data) {
     $(secondaryImgDiv).prepend('<img id="poster-img" src="' + data.image + '" width="285" height="440.39"/>');
     $("#poster-img").appendTo(secondaryImgDiv);
     $(secondaryData).appendTo(secondaryDataDiv);
-    $(secondaryDataDiv).append('<div id="plot" class="modal"><div class="modal-content"><h4>Plot Summary: </h4><p>' + data.plot + '</p></div><div class="modal-footer"><button class="modal-close waves-effect waves-green btn-flat">Close</button></div></div>')
-    $(secondaryDataDiv).append("<button data-target='plot' class='btn modal-trigger'>Display plot summary</button>"); 
+    $(secondaryDataDiv).append('<p>' + data.plot + '</p>'); 
 
     function saveTitleData(data) {
         if (titleData.length > 0) {
