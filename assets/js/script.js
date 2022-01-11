@@ -1,12 +1,13 @@
 $(document).ready(function(){
     $('.modal').modal();
+    $('select').formSelect();
   });
 
 //var apiKey = "k_esgvbo9o";
 var apiKey = "k_n93546yy";
+var omdbKey = "90e49496";
 var searchCount = localStorage.getItem("searchCount");
 var isNewSearch = true;
-var isNewGenre = true;
 
 if (!searchCount) {
     var searchCount = 0;
@@ -58,6 +59,11 @@ var formSubmitHandler = function(event) {
     }
 };
 
+function changeSearchBar() {
+    // document.querySelector("select[name='task-type']").value = taskType;
+    $(".form-group .fifteen select").val("1")
+}
+
 function displayMainTitle(data) {
     // remove elements on the page if searching additional times
     $(".main-title").remove();
@@ -85,21 +91,7 @@ function displayMainTitle(data) {
     $(secondaryDataDiv).append("<button data-target='plot' class='btn modal-trigger'>Display plot summary</button>"); 
 
     function saveTitleData(data) {
-        if (titleData.length > 0) {
-            // confirm if a title has already been searched for
-            for (i = 0; i < titleData.length; i++) {
-                if (titleData[i].title === data.title) {
-                    isNewSearch = false;
-                } else {
-                    isNewSearch = true;
-                }
-            }
-        }
-
-        if (isNewSearch === true) {
-            window.searchCount += 1;
-        }
-
+        // set the variables in LS
         var title = data.title;
         dataElement.title = title;
 
@@ -140,16 +132,43 @@ function displayMainTitle(data) {
         localStorage.setItem("titleData", JSON.stringify(titleData));
     }
 
-    if (isNewSearch === true) {
-        for (let i = 0; i < data.genreList.length; i++) {
-            var currentBtn = JSON.stringify(data.genreList[i].value)
-            currentBtn = currentBtn.replace(/\"/g, "");
-            $("#button-div").append("<button id='btn" + currentBtn + "' class='inline waves-effect waves-light btn-small'>" + currentBtn + "</button>");  
+    if (titleData.length > 0) {
+        // confirm if a title has already been searched for
+        for (i = 0; i < titleData.length; i++) {
+            if (titleData[i].title === data.title) {
+                isNewSearch = false;
+            } else {
+                isNewSearch = true;
+            }
         }
     }
+
+    if (isNewSearch === true) {
+        if (window.searchCount > 0) {
+            for (let i = 0; i < titleData.length; i++) {
+                var currentBtn = JSON.stringify(data.genreList[i].value)
+                currentBtn = currentBtn.replace(/\"/g, "")
+                    if ($("#" + currentBtn).length) {
+                    } else {
+                        $("#button-div").append("<button id='btn" + currentBtn + "' class='inline waves-effect waves-light btn-small'>" + currentBtn + "</button>");
+                    }
+            }
+        } else {
+            for (let i = 0; i < data.genreList.length; i++) {
+                var currentBtn = JSON.stringify(data.genreList[i].value)
+                currentBtn = currentBtn.replace(/\"/g, "");
+                $("#button-div").append("<button id='btn" + currentBtn + "' class='inline waves-effect waves-light btn-small'>" + currentBtn + "</button>");  
+            }
+        }
+
+        // last part of this if isNewSearch is to increment the search count
+        window.searchCount += 1;
+    }
+
     // run function to increase count (if isNewSearch) and set items to LS
     saveTitleData(data); 
 
+    // get the updated list from LS so the app has it before the next search
     titleData = localStorage.getItem("titleData")
     titleData = JSON.parse(titleData);
 }
@@ -158,3 +177,14 @@ function displayMainTitle(data) {
 var searchFormEl = document.querySelector("#search-form");
 var searchNameEl = document.querySelector("#name");
 searchFormEl.addEventListener("submit", formSubmitHandler);
+
+// toggle functionality to change the search type and the API call involved
+$("#selection-type").on('change', function() {
+    $("#name").attr('placeholder', 'Search ' + $("#selection-type").find(':selected').text());
+
+    if ($("#selection-type").val() === "1") {
+        console.log("1");
+    } else if ($("#selection-type").val() === "2") {
+        console.log("2");
+    }
+});
