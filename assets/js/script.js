@@ -81,7 +81,13 @@ function displayMainTitle(data) {
     $(secondaryImgDiv).prepend('<img id="poster-img" src="' + data.image + '" width="285" height="440.39"/>');
     $("#poster-img").appendTo(secondaryImgDiv);
     $(secondaryData).appendTo(secondaryDataDiv);
-    $(secondaryDataDiv).append('<p>' + data.plot + '</p>'); 
+    $(secondaryDataDiv).append('<div id="plot" class="modal"><div class="modal-content"></div>');
+    $(secondaryDataDiv).append("<button data-target='plot' class='btn modal-trigger'>Display plot summary</button>");
+    $("#para").html(data.plot);
+    
+
+
+
 
     function saveTitleData(data) {
         if (titleData.length > 0) {
