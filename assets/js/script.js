@@ -5,7 +5,9 @@ $(document).ready(function(){
 
 //var apiKey = "k_esgvbo9o";
 var apiKey = "k_n93546yy";
-var omdbKey = "90e49496";
+
+//omdb key
+var apiKey2 = "90e49496";
 var searchCount = localStorage.getItem("searchCount");
 var isNewSearch = true;
 
@@ -46,6 +48,21 @@ function getTitle(name) {
             });
 }
 
+function getYear(genre) {
+    var omdbApiUrlName = "http://www.omdbapi.com/?apikey=" + apiKey2 + "&y=" + genre;
+    var apiUrlGenre = "https://imdb-api.com/API/AdvancedSearch/" + apiKey + "/?genres=" + genre;
+    fetch(apiUrlGenre)
+            .then(response=> response.json())
+            .then(data=> {
+                if (data.results.length > 0) {
+                    console.log(data);
+                } else { 
+                    console.log("Error: No results found")
+                }
+            });
+}
+
+
 // used to submit the search for a title
 var formSubmitHandler = function(event) {
     event.preventDefault();
@@ -59,10 +76,18 @@ var formSubmitHandler = function(event) {
     }
 };
 
-function changeSearchBar() {
-    // document.querySelector("select[name='task-type']").value = taskType;
-    $(".form-group .fifteen select").val("1")
-}
+// used to submit the search for a year
+var formSubmitHandler2 = function(event) {
+    event.preventDefault();
+
+    var searchGenre = searchNameEl.value.trim();
+    if (searchGenre) {
+        getYear(searchGenre);
+        searchNameEl.value = "";
+    } else {
+        alert("Please enter a genre!");
+    }
+};
 
 function displayMainTitle(data) {
     // remove elements on the page if searching additional times
@@ -87,8 +112,8 @@ function displayMainTitle(data) {
     $(secondaryImgDiv).prepend('<img id="poster-img" src="' + data.image + '" width="285" height="440.39"/>');
     $("#poster-img").appendTo(secondaryImgDiv);
     $(secondaryData).appendTo(secondaryDataDiv);
-    $(secondaryDataDiv).append('<div id="plot" class="modal"><div class="modal-content"><h4>Plot Summary: </h4><p>' + data.plot + '</p></div><div class="modal-footer"><button class="modal-close waves-effect waves-green btn-flat">Close</button></div></div>')
     $(secondaryDataDiv).append("<button data-target='plot' class='btn modal-trigger'>Display plot summary</button>"); 
+    $("#para").html(data.plot);
 
     function saveTitleData(data) {
         // set the variables in LS
@@ -142,16 +167,17 @@ function displayMainTitle(data) {
             }
         }
     }
-
+    
     if (isNewSearch === true) {
         if (window.searchCount > 0) {
-            for (let i = 0; i < titleData.length; i++) {
-                var currentBtn = JSON.stringify(data.genreList[i].value)
+            for (let y = 0; y < data.genreList.length; y++) {
+                var currentBtn = JSON.stringify(data.genreList[y].value)
                 currentBtn = currentBtn.replace(/\"/g, "")
-                    if ($("#" + currentBtn).length) {
-                    } else {
-                        $("#button-div").append("<button id='btn" + currentBtn + "' class='inline waves-effect waves-light btn-small'>" + currentBtn + "</button>");
-                    }
+                if ($("#btn" + currentBtn).length == 1) {
+                    console.log("test")
+                } else {
+                    $("#button-div").append("<button id='btn" + currentBtn + "' class='inline waves-effect waves-light btn-small'>" + currentBtn + "</button>");
+                }
             }
         } else {
             for (let i = 0; i < data.genreList.length; i++) {
@@ -173,6 +199,7 @@ function displayMainTitle(data) {
     titleData = JSON.parse(titleData);
 }
 
+
 // query selectors for the search by title form
 var searchFormEl = document.querySelector("#search-form");
 var searchNameEl = document.querySelector("#name");
@@ -184,7 +211,11 @@ $("#selection-type").on('change', function() {
 
     if ($("#selection-type").val() === "1") {
         console.log("1");
+        searchFormEl.removeEventListener("submit", formSubmitHandler2); 
+        searchFormEl.addEventListener("submit", formSubmitHandler);
     } else if ($("#selection-type").val() === "2") {
         console.log("2");
+        searchFormEl.removeEventListener("submit", formSubmitHandler); 
+        searchFormEl.addEventListener("submit", formSubmitHandler2);
     }
 });
