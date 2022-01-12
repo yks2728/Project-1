@@ -79,7 +79,7 @@ function fetchLinkedTitle(link) {
             .then(response=> response.json())
             .then(data=> {
                 console.log(data);
-                if (data.results.length > 0) {
+                if (data.zzlength > 0) {
                     displayLinkedTitle(data);
                 } else {
                     console.log("Error: Invalid ID");
@@ -353,17 +353,16 @@ function displayRandomGenres(data, genre) {
     var secondaryDataDiv = $("<div></div>", { id: "secondary-data-div", class: "secondary-data col s12" }); 
     $(secondaryDataDiv).appendTo("#row-2");
     var secondaryData = $("<p></p>", { id: "secondary-data", class: "secondary-data" });
+    $(secondaryData).appendTo(secondaryDataDiv);
     
     // create links which correspond to the data returned and lead to a title display page
-    for (var a = data.results, i = a.length; i--; ) {
-        var random = a.splice(Math.floor(Math.random() * (i + 1)), 1)[0];
-        $(secondaryData).html() += "<a onclick='a"+ random + "1' id='a" + random + "1'>" + data.results[random].title + "</a>";
-        var aLink = document.querySelector("#a" + random + "1");
-        var link = data.results[random].id;
+    for (var i = 0; i < data.results.length; i++) {
+        var secondaryDataEl = document.querySelector("#secondary-data");
+        secondaryDataEl.innerHTML += "<a onclick='a"+ i + "1' id='a" + i + "1'>" + data.results[i].title + "</a><br>";
+        var aLink = document.querySelector("#a" + i + "1");
+        var link = data.results[i].id;
         aLink.addEventListener('click', fetchLinkedTitle(link));
     }
-
-    $(secondaryData).appendTo(secondaryDataDiv);
 }
 
 function displayGenresList() {
