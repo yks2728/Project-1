@@ -59,21 +59,33 @@ function getGenres(genre) {
                 console.log(data);
                 if (data.results.length > 0) {
                     displayRandomGenres(data, genre);
-                    var apiUrlGenrePage2 = "https://imdb-api.com/API/AdvancedSearch/" + apiKey2 + "/?genres=" + genre + "&page=2";
+//                    var apiUrlGenrePage2 = "https://imdb-api.com/API/AdvancedSearch/" + apiKey2 + "/?genres=" + genre + "&page=2";
 
-                        fetch(apiUrlGenrePage2)
-                            .then(response => response.json())
-                            .then(data=> {
-                                console.log(data);
-                                displayRandomGenresPg2(data);
-                            })
+//                        fetch(apiUrlGenrePage2)
+//                            .then(response => response.json())
+// if random                      .then(data=> {
+// from 2 pg                      console.log(data);
+// api calls                      displayRandomGenresPg2(data);
+// limited                    })
                 } else { 
                     console.log("Error: No results found")
                 }
             });
 }
-
-function 
+// get title via genre list link
+function fetchLinkedTitle(link) {
+    var apiUrlLink = "https://imdb-api.com/en/API/Title/" + apiKey2 + "/" + link;
+        fetch(apiUrlLink)
+            .then(response=> response.json())
+            .then(data=> {
+                console.log(data);
+                if (data.results.length > 0) {
+                    displayLinkedTitle(data);
+                } else {
+                    console.log("Error: Invalid ID");
+                }
+            });   
+}
 
 // used to submit the search for a title via omdb api
 var formSubmitHandler = function(event) {
@@ -215,7 +227,115 @@ function displayMainTitle(data) {
     titleData = JSON.parse(titleData);
 }
 
-function displayLinkedTitle(data) {}
+function displayLinkedTitle(data) {
+    // this function is the bridge from a link in the genre listing to a title displaying
+        // remove elements on the page first for searching additional times
+        $(".main-title").remove();
+        $(".secondary-data").remove();
+    
+        // one div showing title and year released
+        var mainTitleDiv = $("<div></div>", { id: "main-title", class: "main-title col s12 m6 l6 xl6" });
+        $(mainTitleDiv).appendTo("#row-1");
+        var mainTitleData = $("<p></p>", { id: "main-data", class: "main-data" });
+        $(mainTitleData).html(data.title + "<br>" + "<em>" + data.year + "</em>" + "<br>");
+        $(mainTitleData).appendTo(mainTitleDiv);
+    
+        // two divs side by side, or full length if mobile 
+        var secondaryDataDiv = $("<div></div>", { id: "secondary-data-div", class: "secondary-data col s12 m8 l8 xl8" });
+        var secondaryImgDiv = $("<div></div>", { id: "secondary-img-div", class: " secondary-img col s12 m4 l4 xl4" }); 
+        $(secondaryDataDiv).appendTo("#row-2");
+        $(secondaryImgDiv).appendTo("#row-2");
+        var secondaryData = $("<p></p>", { id: "secondary-data", class: "secondary-data" });
+    
+        $(secondaryData).html("<span class='gold'>Stars:</span> " + data.stars + "<br><span class='gold'>Runtime:</span><em> " + data.runtimeStr + "</em><br><span class='gold'>Director:</span> " + data.directors +  "<br><span class='gold'>Content Rating:</span> " + data.contentRating + "<br><span class='gold'>Awards:</span> " + data.awards);
+        $(secondaryImgDiv).prepend('<img id="poster-img" src="' + data.image + '" width="285" height="440.39"/>');
+        $("#poster-img").appendTo(secondaryImgDiv);
+        $(secondaryData).appendTo(secondaryDataDiv);
+        $(secondaryDataDiv).append("<button data-target='plot' class='btn modal-trigger bottom'>Display plot summary</button>"); 
+        $("#para").html(data.plot);
+        
+        function saveTitleData2(data) {
+            //modified save function, values are slightly different between diff. api calls
+            // set the variables in LS
+            var title = data.title;
+            dataElement.title = title;
+    
+            var year = data.year;
+            dataElement.year = year;
+    
+            var actors = data.stars;
+            dataElement.actors = actors;
+    
+            var runtime = data.runtimeStr;
+            dataElement.runtime = runtime;
+    
+            var director = data.directors;
+            dataElement.director = director;
+    
+            var rating = data.contentRating;
+            dataElement.rating = rating;
+    
+            var awards = data.awards;
+            dataElement.awards = awards;
+    
+            var image = data.image;
+            dataElement.image = image;
+    
+            var plot = data.plot;
+            dataElement.plot = plot;
+    
+            dataElement.genreList = genreArr;
+    
+            localStorage.setItem("searchCount", window.searchCount)
+            dataElement.searchCount = window.searchCount;
+    
+            titleData.push(dataElement);
+            localStorage.setItem("titleData", JSON.stringify(titleData));
+        }
+    
+        if (titleData.length > 0) {
+            // confirm if a title has already been searched for by using a boolean
+            for (i = 0; i < titleData.length; i++) {
+                if (titleData[i].title === data.title) {
+                    isNewSearch = false;
+                } else {
+                    isNewSearch = true;
+                }
+            }
+        }
+        
+        // only add buttons for genres if that genre has not appeared yet in a search
+        if (isNewSearch === true) {
+            var genreList = data.Genre;
+            var genreArr = genreList.split(",").map(item => item.trim());
+            if (window.searchCount > 0) {
+                for (let i = 0; i < titleData.length; i++) {
+                    var currentBtn = JSON.stringify(data.genreList[i].value)
+                    currentBtn = currentBtn.replace(/\"/g, "")
+                        if ($("#" + currentBtn).length) {
+                        } else {
+                            $("#button-div").append("<button id='btn" + currentBtn + "' class='inline waves-effect waves-light btn-small'>" + currentBtn + "</button>");
+                        }
+                }
+            } else {
+                for (let i = 0; i < data.genreList.length; i++) {
+                    var currentBtn = JSON.stringify(data.genreList[i].value)
+                    currentBtn = currentBtn.replace(/\"/g, "");
+                    $("#button-div").append("<button id='btn" + currentBtn + "' class='inline waves-effect waves-light btn-small'>" + currentBtn + "</button>");  
+                }
+            }
+    
+            // last part of this if isNewSearch is to increment the search count
+            window.searchCount += 1;
+        }
+    
+        // run function to set items to LS (this is after buttons have been added or not)
+        saveTitleData2(data); 
+    
+        // get the updated list from LS so the app has it before the next search
+        titleData = localStorage.getItem("titleData")
+        titleData = JSON.parse(titleData);
+}
 
 function displayRandomGenres(data, genre) {
     // remove elements on the page first for searching additional times
@@ -237,13 +357,12 @@ function displayRandomGenres(data, genre) {
     // create links which correspond to the data returned and lead to a title display page
     for (var a = data.results, i = a.length; i--; ) {
         var random = a.splice(Math.floor(Math.random() * (i + 1)), 1)[0];
-        $(secondaryData).html() += "<a onclick='a"+ i + "1' id='a" + i + "1'>" + data.results[i].title + "</a>";
-        var aLink = document.querySelector("#a" + i + "1");
+        $(secondaryData).html() += "<a onclick='a"+ random + "1' id='a" + random + "1'>" + data.results[random].title + "</a>";
+        var aLink = document.querySelector("#a" + random + "1");
+        var link = data.results[random].id;
         aLink.addEventListener('click', fetchLinkedTitle(link));
-
     }
-   
-    
+
     $(secondaryData).appendTo(secondaryDataDiv);
 }
 
