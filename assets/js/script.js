@@ -1,13 +1,14 @@
 $(document).ready(function(){
     $('.modal').modal();
     $('select').formSelect();
-  });
-
-//var apiKey = "k_esgvbo9o";
-var apiKey = "k_n93546yy";
+});
 
 //omdb key
-var apiKey2 = "90e49496";
+var apiKey = "90e49496";
+
+//var apiKey2 = "k_esgvbo9o";
+var apiKey2 = "k_n93546yy";
+
 var searchCount = localStorage.getItem("searchCount");
 var isNewSearch = true;
 
@@ -18,7 +19,7 @@ if (!searchCount) {
     searchCount = window.searchCount;
 }
 
-// initialize empty arrays and obj. if it's a new search, otherwise get from LS
+// initialize empty arrays and obj. if it's an initial search, otherwise get from LS
 if (window.searchCount === 0) {
     var titleData = [];
     var dataElement = {};
@@ -28,30 +29,31 @@ if (window.searchCount === 0) {
     var dataElement = {};
 }
 
+// omdb api search for title, returns first result in the primary display via displayMainTitle()
 function getTitle(name) {
-    var apiUrlName = "https://imdb-api.com/en/API/SearchTitle/" + apiKey + "/" + name;
-        fetch(apiUrlName)
+    var apiUrlTitle = "http://www.omdbapi.com/?apikey=" + apiKey + "&s=" + name;
+        fetch(apiUrlTitle)
             .then(response=> response.json())
             .then(data=> {
                 console.log(data);
-                if (data.results.length > 0) {
-                    var searchID = data.results[0].id;
-                    var apiUrlName2 = "https://imdb-api.com/en/API/Title/" + apiKey + "/" + searchID;
+                if (data.Response === "True") {
+                    var imdbID = data.Search[0].imdbID;
+                    var apiUrlTitle2 = "http://www.omdbapi.com/?apikey=" + apiKey + "&i=" + imdbID + "&plot=full";
 
-                        fetch(apiUrlName2)
+                       fetch(apiUrlTitle2)
                             .then(response => response.json())
                             .then(data=> {
                                 console.log(data)
                                 displayMainTitle(data);
                             });
-                } else { console.log("Error: No results found"); }
+                } else if (data.Error === "Movie not found!") { console.log("Error: No results found"); }
             });
 }
 
-function getYear(genre) {
-    var omdbApiUrlName = "http://www.omdbapi.com/?apikey=" + apiKey2 + "&y=" + genre;
-    var apiUrlGenre = "https://imdb-api.com/API/AdvancedSearch/" + apiKey + "/?genres=" + genre;
-    fetch(apiUrlGenre)
+// imdb api advanced search for genres, use commas for multiple keywords?, TO DO: returns a list in the primary display
+function getGenres(genre) {
+    var apiUrlGenre = "https://imdb-api.com/API/AdvancedSearch/" + apiKey2 + "/?genres=" + genre;
+        fetch(apiUrlGenre)
             .then(response=> response.json())
             .then(data=> {
                 if (data.results.length > 0) {
@@ -62,8 +64,7 @@ function getYear(genre) {
             });
 }
 
-
-// used to submit the search for a title
+// used to submit the search for a title via omdb api
 var formSubmitHandler = function(event) {
     event.preventDefault();
 
@@ -76,13 +77,13 @@ var formSubmitHandler = function(event) {
     }
 };
 
-// used to submit the search for a year
+// used to submit the search for a single genre or multiples (use commas for that??)
 var formSubmitHandler2 = function(event) {
     event.preventDefault();
 
     var searchGenre = searchNameEl.value.trim();
     if (searchGenre) {
-        getYear(searchGenre);
+        getGenres(searchGenre);
         searchNameEl.value = "";
     } else {
         alert("Please enter a genre!");
@@ -90,7 +91,7 @@ var formSubmitHandler2 = function(event) {
 };
 
 function displayMainTitle(data) {
-    // remove elements on the page if searching additional times
+    // remove elements on the page first for searching additional times
     $(".main-title").remove();
     $(".secondary-data").remove();
     $(".secondary-img").remove();
@@ -99,7 +100,7 @@ function displayMainTitle(data) {
     var mainTitleDiv = $("<div></div>", { id: "main-title", class: "main-title col s12 m6 l6 xl6" });
     $(mainTitleDiv).appendTo("#row-1");
     var mainTitleData = $("<p></p>", { id: "main-data", class: "main-data" });
-    $(mainTitleData).html(data.title + "<br>" + "<em>" + data.year + "</em>" + "<br>");
+    $(mainTitleData).html(data.Title + "<br>" + "<em>" + data.Year + "</em>" + "<br>");
     $(mainTitleData).appendTo(mainTitleDiv);
 
     // two divs side by side, or full length if mobile 
@@ -108,47 +109,49 @@ function displayMainTitle(data) {
     $(secondaryDataDiv).appendTo("#row-2");
     $(secondaryImgDiv).appendTo("#row-2");
     var secondaryData = $("<p></p>", { id: "secondary-data", class: "secondary-data" });
-    $(secondaryData).html("<span class='gold'>Stars:</span> " + data.stars + "<br><span class='gold'>Runtime:</span><em> " + data.runtimeStr + "</em><br><span class='gold'>Director:</span> " + data.directors + "<br><span class='gold'>Companies:</span> " + data.companies + "<br><span class='gold'>Content Rating:</span> " + data.contentRating + "<br><span class='gold'>Awards:</span> " + data.awards);
-    $(secondaryImgDiv).prepend('<img id="poster-img" src="' + data.image + '" width="285" height="440.39"/>');
+    var rottenTom = JSON.stringify(data.Ratings[1]);
+    rottenTom = rottenTom.replace(/[{}]/g, '');
+    rottenTom = rottenTom.replace(/\"/g, "");
+    rottenTom = rottenTom.replace('Source:Rotten Tomatoes,Value:', '');
+
+    $(secondaryData).html("<span class='gold'>Stars:</span> " + data.Actors + "<br><span class='gold'>Runtime:</span><em> " + data.Runtime + "</em><br><span class='gold'>Director:</span> " + data.Director +  "<br><span class='gold'>Content Rating:</span> " + data.Rated + "<br><span class='gold'>Awards:</span> " + data.Awards + "<br><span class='gold'>Rotten Tomatoes:</span> " + rottenTom);
+    $(secondaryImgDiv).prepend('<img id="poster-img" src="' + data.Poster + '" width="285" height="440.39"/>');
     $("#poster-img").appendTo(secondaryImgDiv);
     $(secondaryData).appendTo(secondaryDataDiv);
-    $(secondaryDataDiv).append("<button data-target='plot' class='btn modal-trigger'>Display plot summary</button>"); 
-    $("#para").html(data.plot);
+    $(secondaryDataDiv).append("<button data-target='plot' class='btn modal-trigger bottom'>Display plot summary</button>"); 
+    $("#para").html(data.Plot);
 
     function saveTitleData(data) {
         // set the variables in LS
-        var title = data.title;
+        var title = data.Title;
         dataElement.title = title;
 
-        var year = data.year;
+        var year = data.Year;
         dataElement.year = year;
 
-        var stars = data.stars;
-        dataElement.stars = stars;
+        var actors = data.Actors;
+        dataElement.actors = actors;
 
-        var runtimeStr = data.runtimeStr;
-        dataElement.runtimeStr = runtimeStr;
+        var runtime = data.Runtime;
+        dataElement.runtime = runtime;
 
-        var directors = data.directors;
-        dataElement.directors = directors;
+        var director = data.Director;
+        dataElement.director = director;
 
-        var companies = data.companies;
-        dataElement.companies = companies;
+        var rating = data.Rating;
+        dataElement.rating = rating;
 
-        var contentRating = data.contentRating;
-        dataElement.contentRating = contentRating;
+        var awards = data.Awards;
+        dataElement.awards = awards;
 
-        var awards = data.awards;
-        dataElement.contentRating = awards;
-
-        var image = data.image;
+        var image = data.Poster;
         dataElement.image = image;
 
-        var plot = data.plot;
+        var plot = data.Plot;
         dataElement.plot = plot;
 
-        var genreList = data.genreList;
-        dataElement.genreList = genreList;
+        dataElement.rottenTom = rottenTom;
+        dataElement.genreList = genreArr;
 
         localStorage.setItem("searchCount", window.searchCount)
         dataElement.searchCount = window.searchCount;
@@ -158,7 +161,7 @@ function displayMainTitle(data) {
     }
 
     if (titleData.length > 0) {
-        // confirm if a title has already been searched for
+        // confirm if a title has already been searched for by using a boolean
         for (i = 0; i < titleData.length; i++) {
             if (titleData[i].title === data.title) {
                 isNewSearch = false;
@@ -168,21 +171,23 @@ function displayMainTitle(data) {
         }
     }
     
+    // only add buttons for genres if that genre has not appeared yet in a search
     if (isNewSearch === true) {
+        var genreList = data.Genre;
+        var genreArr = genreList.split(",").map(item => item.trim());
         if (window.searchCount > 0) {
-            for (let y = 0; y < data.genreList.length; y++) {
-                var currentBtn = JSON.stringify(data.genreList[y].value)
-                currentBtn = currentBtn.replace(/\"/g, "")
+            for (let y = 0; y < genreArr.length; y++) {
+                var currentBtn = genreArr[y];
                 if ($("#btn" + currentBtn).length == 1) {
-                    console.log("test")
+                    // do nothing
                 } else {
                     $("#button-div").append("<button id='btn" + currentBtn + "' class='inline waves-effect waves-light btn-small'>" + currentBtn + "</button>");
                 }
             }
         } else {
-            for (let i = 0; i < data.genreList.length; i++) {
-                var currentBtn = JSON.stringify(data.genreList[i].value)
-                currentBtn = currentBtn.replace(/\"/g, "");
+            // this else signifies being a first search
+            for (let i = 0; i < genreArr.length; i++) {
+                var currentBtn = genreArr[i];
                 $("#button-div").append("<button id='btn" + currentBtn + "' class='inline waves-effect waves-light btn-small'>" + currentBtn + "</button>");  
             }
         }
@@ -191,7 +196,7 @@ function displayMainTitle(data) {
         window.searchCount += 1;
     }
 
-    // run function to increase count (if isNewSearch) and set items to LS
+    // run function to set items to LS (this is after buttons have been added or not)
     saveTitleData(data); 
 
     // get the updated list from LS so the app has it before the next search
@@ -199,10 +204,10 @@ function displayMainTitle(data) {
     titleData = JSON.parse(titleData);
 }
 
-
 // query selectors for the search by title form
 var searchFormEl = document.querySelector("#search-form");
 var searchNameEl = document.querySelector("#name");
+// default search is by title
 searchFormEl.addEventListener("submit", formSubmitHandler);
 
 // toggle functionality to change the search type and the API call involved
@@ -210,11 +215,9 @@ $("#selection-type").on('change', function() {
     $("#name").attr('placeholder', 'Search ' + $("#selection-type").find(':selected').text());
 
     if ($("#selection-type").val() === "1") {
-        console.log("1");
         searchFormEl.removeEventListener("submit", formSubmitHandler2); 
         searchFormEl.addEventListener("submit", formSubmitHandler);
     } else if ($("#selection-type").val() === "2") {
-        console.log("2");
         searchFormEl.removeEventListener("submit", formSubmitHandler); 
         searchFormEl.addEventListener("submit", formSubmitHandler2);
     }
