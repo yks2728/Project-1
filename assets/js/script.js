@@ -56,13 +56,24 @@ function getGenres(genre) {
         fetch(apiUrlGenre)
             .then(response=> response.json())
             .then(data=> {
+                console.log(data);
                 if (data.results.length > 0) {
-                    console.log(data);
+                    displayRandomGenres(data, genre);
+                    var apiUrlGenrePage2 = "https://imdb-api.com/API/AdvancedSearch/" + apiKey2 + "/?genres=" + genre + "&page=2";
+
+                        fetch(apiUrlGenrePage2)
+                            .then(response => response.json())
+                            .then(data=> {
+                                console.log(data);
+                                displayRandomGenresPg2(data);
+                            })
                 } else { 
                     console.log("Error: No results found")
                 }
             });
 }
+
+function 
 
 // used to submit the search for a title via omdb api
 var formSubmitHandler = function(event) {
@@ -204,11 +215,77 @@ function displayMainTitle(data) {
     titleData = JSON.parse(titleData);
 }
 
+function displayLinkedTitle(data) {}
+
+function displayRandomGenres(data, genre) {
+    // remove elements on the page first for searching additional times
+    $(".main-title").remove();
+    $(".secondary-data").remove();
+    $(".secondary-img").remove()
+
+    // one div showing search parameters
+    var mainTitleDiv = $("<div></div>", { id: "main-title", class: "main-title col s12 m6 l6 xl6" });
+    $(mainTitleDiv).appendTo("#row-1");
+    var mainTitleData = $("<p></p>", { id: "main-data", class: "main-data" });
+    $(mainTitleData).html("Search: " + genre);
+    $(mainTitleData).appendTo(mainTitleDiv);
+
+    var secondaryDataDiv = $("<div></div>", { id: "secondary-data-div", class: "secondary-data col s12" }); 
+    $(secondaryDataDiv).appendTo("#row-2");
+    var secondaryData = $("<p></p>", { id: "secondary-data", class: "secondary-data" });
+    
+    // create links which correspond to the data returned and lead to a title display page
+    for (var a = data.results, i = a.length; i--; ) {
+        var random = a.splice(Math.floor(Math.random() * (i + 1)), 1)[0];
+        $(secondaryData).html() += "<a onclick='a"+ i + "1' id='a" + i + "1'>" + data.results[i].title + "</a>";
+        var aLink = document.querySelector("#a" + i + "1");
+        aLink.addEventListener('click', fetchLinkedTitle(link));
+
+    }
+   
+    
+    $(secondaryData).appendTo(secondaryDataDiv);
+}
+
+function displayGenresList() {
+    // remove elements on the page first for searching additional times
+    $(".main-title").remove();
+    $(".secondary-data").remove();
+    $(".secondary-img").remove()
+
+    // one primary div which displays a list of genres;
+    var secondaryDataDiv = $("<div></div>", { id: "secondary-data-div", class: "secondary-data col s6" }); 
+    $(secondaryDataDiv).appendTo("#row-2");
+    var secondaryDataDiv2 = $("<div></div>", { id: "secondary-data-div-2", class: "secondary-data col s6" });
+    $(secondaryDataDiv2).appendTo("#row-2");
+    var secondaryData = $("<p></p>", { id: "secondary-data", class: "secondary-data gold center right" });
+    var secondaryData2 = $("<p></p>", { id: "secondary-data-2", class: "secondary-data gold center left" });
+
+    // list of genres
+    $(secondaryData).html("Use commas for multiples: <br>Action<br>Adventure<br>Animation<br>Biography<br>Comedy<br>Crime<br>Documentary<br>Drama<br>Family<br>Fantasy<br>Film-Noir<br>Game-Show<br>History");
+    $(secondaryData).appendTo(secondaryDataDiv);
+    $(secondaryData2).html("<br>Horror<br>Music<br>Musical<br>Mystery<br>News<br>Reality-TV<br>Romance<br>Sci-Fi<br>Sport<br>Talk-Show<br>Thriller<br>War<br>Western");
+    $(secondaryData2).appendTo(secondaryDataDiv2);
+    var closeBtn = $("<button></button>", { id: "close-btn", class: "inline waves-effect waves-light btn-small" });
+    $(closeBtn).html("Close");
+    $(closeBtn).appendTo(secondaryDataDiv);
+
+    function clearGenresList() {
+        $(".secondary-data").remove();
+    }
+
+    var closeBtnEl = document.querySelector("#close-btn");
+    closeBtnEl.addEventListener("click", clearGenresList);
+}
+
 // query selectors for the search by title form
 var searchFormEl = document.querySelector("#search-form");
 var searchNameEl = document.querySelector("#name");
+var genresIdeasBtn = document.querySelector("#genres-ideas");
+
 // default search is by title
 searchFormEl.addEventListener("submit", formSubmitHandler);
+genresIdeasBtn.addEventListener("click", displayGenresList);
 
 // toggle functionality to change the search type and the API call involved
 $("#selection-type").on('change', function() {
