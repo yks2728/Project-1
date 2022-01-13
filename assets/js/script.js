@@ -20,12 +20,12 @@ if (!searchCount) {
 }
 
 // initialize empty arrays and obj. if it's an initial search, otherwise get from LS
-if (window.searchCount === 0) {
+if (!JSON.parse(localStorage.getItem("titleData"))) {
     var titleData = [];
     var dataElement = {};
 } else {
-    var titleData = localStorage.getItem(titleData);
-    titleData = JSON.parse(titleData);
+    var titleData = JSON.parse(localStorage.getItem("titleData"));
+    console.log(titleData);
     var dataElement = {};
 }
 
@@ -91,6 +91,7 @@ var formSubmitHandler2 = function(event) {
 };
 
 function displayMainTitle(data) {
+    console.log(data);
     // remove elements on the page first for searching additional times
     $(".main-title").remove();
     $(".secondary-data").remove();
@@ -123,43 +124,44 @@ function displayMainTitle(data) {
 
     function saveTitleData(data) {
         // set the variables in LS
-        var title = data.Title;
-        dataElement.title = title;
+        // var title = data.Title;
+        // dataElement.Title = title;
 
-        var year = data.Year;
-        dataElement.year = year;
+        // var year = data.Year;
+        // dataElement.Year = year;
 
-        var actors = data.Actors;
-        dataElement.actors = actors;
+        // var actors = data.Actors;
+        // dataElement.Actors = actors;
 
-        var runtime = data.Runtime;
-        dataElement.runtime = runtime;
+        // var runtime = data.Runtime;
+        // dataElement.Runtime = runtime;
 
-        var director = data.Director;
-        dataElement.director = director;
+        // var director = data.Director;
+        // dataElement.Director = director;
 
-        var rating = data.Rating;
-        dataElement.rating = rating;
+        // var rating = data.Rating;
+        // dataElement.Rating = rating;
 
-        var awards = data.Awards;
-        dataElement.awards = awards;
+        // var awards = data.Awards;
+        // dataElement.Awards = awards;
 
-        var image = data.Poster;
-        dataElement.image = image;
+        // var image = data.Poster;
+        // dataElement.Image = image;
 
-        var plot = data.Plot;
-        dataElement.plot = plot;
+        // var plot = data.Plot;
+        // dataElement.Plot = plot;
 
-        dataElement.rottenTom = rottenTom;
-        dataElement.genreList = genreArr;
+        // dataElement.rottenTom = rottenTom;
+        // dataElement.genreList = genreArr;
 
-        localStorage.setItem("searchCount", window.searchCount)
-        dataElement.searchCount = window.searchCount;
-
-        titleData.push(dataElement);
+        // localStorage.setItem("searchCount", window.searchCount)
+        // dataElement.searchCount = window.searchCount;
+        console.log(titleData);
+        console.log(data);
+        titleData.push(data);
         localStorage.setItem("titleData", JSON.stringify(titleData));
     }
-
+    console.log(titleData);
     if (titleData.length > 0) {
         // confirm if a title has already been searched for by using a boolean
         for (i = 0; i < titleData.length; i++) {
@@ -209,6 +211,25 @@ var searchFormEl = document.querySelector("#search-form");
 var searchNameEl = document.querySelector("#name");
 // default search is by title
 searchFormEl.addEventListener("submit", formSubmitHandler);
+
+function moviesFromLocalStorage () {
+    console.log(titleData);
+    titleData.forEach(movie => {
+        var moviebutton = document.createElement("button");
+        moviebutton.innerText = movie.Title
+        moviebutton.onclick = searchMovie
+        document.getElementById("local-search").append(moviebutton);
+    })
+}
+moviesFromLocalStorage();
+
+function searchMovie (event) {
+    console.log(event.target);
+    var movie = titleData.find(title => title.Title == event.target.innerText);
+    console.log(movie);
+    displayMainTitle(movie);
+}
+
 
 // toggle functionality to change the search type and the API call involved
 $("#selection-type").on('change', function() {
