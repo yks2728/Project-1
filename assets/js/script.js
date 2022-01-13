@@ -6,17 +6,14 @@ $(document).ready(function(){
 //omdb key
 var apiKey = "90e49496";
 
-var apiKey2 = "k_esgvbo9o";
-//var apiKey2 = "k_n93546yy";
+//var apiKey2 = "k_esgvbo9o";
+var apiKey2 = "k_n93546yy";
 
 var searchCount = localStorage.getItem("searchCount");
 var isNewSearch = true;
 
 if (!searchCount) {
     var searchCount = 0;
-    searchCount = window.searchCount;
-} else {
-    searchCount = window.searchCount;
 }
 
 // initialize empty arrays and obj. if it's an initial search, otherwise get from LS
@@ -50,7 +47,7 @@ function getTitle(name) {
             });
 }
 
-// imdb api advanced search for genres, use commas for multiple keywords?, TO DO: returns a list in the primary display
+// imdb api advanced search for genres, use commas and spaces for multiple genres
 function getGenres(genre) {
     var apiUrlGenre = "https://imdb-api.com/API/AdvancedSearch/" + apiKey2 + "/?genres=" + genre;
         fetch(apiUrlGenre)
@@ -58,7 +55,7 @@ function getGenres(genre) {
             .then(data=> {
                 console.log(data);
                 if (data.results.length > 0) {
-                    displayRandomGenres(data, genre);
+                    displayNamesViaGenre(data, genre);
                 } else { 
                     console.log("Error: No results found")
                 }
@@ -78,7 +75,7 @@ var formSubmitHandler = function(event) {
     }
 };
 
-// used to submit the search for a single genre or multiples (use commas for that??)
+// used to submit the search for genre(s) via imdb api adv. search
 var formSubmitHandler2 = function(event) {
     event.preventDefault();
 
@@ -110,12 +107,14 @@ function displayMainTitle(data) {
     $(secondaryDataDiv).appendTo("#row-2");
     $(secondaryImgDiv).appendTo("#row-2");
     var secondaryData = $("<p></p>", { id: "secondary-data", class: "secondary-data" });
+    if (data.Ratings[1]) {
     var rottenTom = JSON.stringify(data.Ratings[1]);
     rottenTom = rottenTom.replace(/[{}]/g, '');
     rottenTom = rottenTom.replace(/\"/g, "");
     rottenTom = rottenTom.replace('Source:Rotten Tomatoes,Value:', '');
+    } else { var rottenTom = "Unavailable" }
 
-    $(secondaryData).html("<span class='gold'>Stars:</span> " + data.Actors + "<br><span class='gold'>Runtime:</span><em> " + data.Runtime + "</em><br><span class='gold'>Director:</span> " + data.Director +  "<br><span class='gold'>Content Rating:</span> " + data.Rated + "<br><span class='gold'>Awards:</span> " + data.Awards + "<br><span class='gold'>Rotten Tomatoes:</span> " + rottenTom);
+    $(secondaryData).html("<span class='gold'>Stars:</span> " + data.Actors + "<br><span class='gold'>Runtime:</span><em> " + data.Runtime + "</em><br><span class='gold'>Genres:</span> " + data.Genre + "<br><span class='gold'>Director:</span> " + data.Director +  "<br><span class='gold'>Content Rating:</span> " + data.Rated + "<br><span class='gold'>Awards:</span> " + data.Awards + "<br><span class='gold'>Rotten Tomatoes:</span> " + rottenTom);
     $(secondaryImgDiv).prepend('<img id="poster-img" src="' + data.Poster + '" width="285" height="440.39"/>');
     $("#poster-img").appendTo(secondaryImgDiv);
     $(secondaryData).appendTo(secondaryDataDiv);
@@ -136,6 +135,9 @@ function displayMainTitle(data) {
         var runtime = data.Runtime;
         dataElement.runtime = runtime;
 
+        var genres = data.Genre
+        dataElement.genres = genres; 
+
         var director = data.Director;
         dataElement.director = director;
 
@@ -152,7 +154,6 @@ function displayMainTitle(data) {
         dataElement.plot = plot;
 
         dataElement.rottenTom = rottenTom;
-        dataElement.genreList = genreArr;
 
         localStorage.setItem("searchCount", window.searchCount)
         dataElement.searchCount = window.searchCount;
@@ -164,7 +165,7 @@ function displayMainTitle(data) {
     if (titleData.length > 0) {
         // confirm if a title has already been searched for by using a boolean
         for (i = 0; i < titleData.length; i++) {
-            if (titleData[i].title === data.title) {
+            if (titleData[i].title === data.Title) {
                 isNewSearch = false;
             } else {
                 isNewSearch = true;
@@ -172,41 +173,71 @@ function displayMainTitle(data) {
         }
     }
     
-    // only add buttons for genres if that genre has not appeared yet in a search
+    // if this search has not yet been registered, add a new button
     if (isNewSearch === true) {
-        var genreList = data.Genre;
-        var genreArr = genreList.split(",").map(item => item.trim());
-        if (window.searchCount > 0) {
-            for (let y = 0; y < genreArr.length; y++) {
-                var currentBtn = genreArr[y];
-                if ($("#btn" + currentBtn).length == 1) {
-                    // do nothing
-                } else {
-                    $("#button-div").append("<button id='btn" + currentBtn + "' class='inline waves-effect waves-light btn-small'>" + currentBtn + "</button>");
-                }
-            }
-        } else {
-            // this else signifies being a first search
-            for (let i = 0; i < genreArr.length; i++) {
-                var currentBtn = genreArr[i];
-                $("#button-div").append("<button id='btn" + currentBtn + "' class='inline waves-effect waves-light btn-small'>" + currentBtn + "</button>");  
-            }
-        }
-
-        // last part of this if isNewSearch is to increment the search count
+        var recentBtn = document.createElement("button");
+        recentBtn.textContent = "" + data.Title;
+        var buttonDiv = document.querySelector("#button-div");
+        // if isNewSearch increment the search count
         window.searchCount += 1;
+        recentBtn.setAttribute("id", "btn" + window.searchCount)
+        recentBtn.classList = "inline waves-effect waves-light btn-small";
+        buttonDiv.appendChild(recentBtn);
     }
 
-    // run function to set items to LS (this is after buttons have been added or not)
-    saveTitleData(data); 
+    if (isNewSearch === true) {
+        saveTitleData(data); 
+    }
 
-    // get the updated list from LS so the app has it before the next search
+    // refresh and parse the titleData array
     titleData = localStorage.getItem("titleData")
     titleData = JSON.parse(titleData);
+
+    // create recent search buttons' "on click" assignments
+    for (let i = 0; i < titleData.length; i++) {
+        $(document).on('click','#btn' + titleData[i].searchCount,function() {
+            // remove whats on the page first
+            $(".main-title").remove();
+            $(".secondary-data").remove();
+            $(".secondary-img").remove();
+            
+            recallTitleSearch(titleData[i]);
+        });
+    }
 }
 
-function displayRandomGenres(data, genre) {
-    // remove elements on the page first for searching additional times
+function recallTitleSearch(arr) {
+// is a copy of the 1st half of displayMainTitle() with datapoints relating to LS instead of
+// the api call without any of the data saving and button adding of that function
+    // remove elements on the page first
+    $(".main-title").remove();
+    $(".secondary-data").remove();
+    $(".secondary-img").remove();
+
+    // one div showing title and year released
+    var mainTitleDiv = $("<div></div>", { id: "main-title", class: "main-title col s12 m6 l6 xl6" });
+    $(mainTitleDiv).appendTo("#row-1");
+    var mainTitleData = $("<p></p>", { id: "main-data", class: "main-data" });
+    $(mainTitleData).html(arr.title + "<br>" + "<em>" + arr.year + "</em>" + "<br>");
+    $(mainTitleData).appendTo(mainTitleDiv);
+
+    // two divs side by side, or full length if mobile 
+    var secondaryDataDiv = $("<div></div>", { id: "secondary-data-div", class: "secondary-data col s12 m8 l8 xl8" });
+    var secondaryImgDiv = $("<div></div>", { id: "secondary-img-div", class: " secondary-img col s12 m4 l4 xl4" }); 
+    $(secondaryDataDiv).appendTo("#row-2");
+    $(secondaryImgDiv).appendTo("#row-2");
+    var secondaryData = $("<p></p>", { id: "secondary-data", class: "secondary-data" });
+
+    $(secondaryData).html("<span class='gold'>Stars:</span> " + arr.actors + "<br><span class='gold'>Runtime:</span><em> " + arr.runtime + "</em><br><span class='gold'>Genres:</span> " + arr.genres + "<br><span class='gold'>Director:</span> " + arr.director +  "<br><span class='gold'>Content Rating:</span> " + arr.rating + "<br><span class='gold'>Awards:</span> " + arr.awards + "<br><span class='gold'>Rotten Tomatoes:</span> " + arr.rottenTom);
+    $(secondaryImgDiv).prepend('<img id="poster-img" src="' + arr.image + '" width="285" height="440.39"/>');
+    $("#poster-img").appendTo(secondaryImgDiv);
+    $(secondaryData).appendTo(secondaryDataDiv);
+    $(secondaryDataDiv).append("<button data-target='plot' class='btn modal-trigger bottom'>Display plot summary</button>"); 
+    $("#para").html(arr.plot);
+}
+
+function displayNamesViaGenre(data, genre) {
+    // remove elements on the page first
     $(".main-title").remove();
     $(".secondary-data").remove();
     $(".secondary-img").remove()
@@ -218,25 +249,26 @@ function displayRandomGenres(data, genre) {
     $(mainTitleData).html("Search: " + genre);
     $(mainTitleData).appendTo(mainTitleDiv);
 
+    // another div showing a list of items which fall under the genre(s)
     var secondaryDataDiv = $("<div></div>", { id: "secondary-data-div", class: "secondary-data col s12" }); 
     $(secondaryDataDiv).appendTo("#row-2");
     var secondaryData = $("<p></p>", { id: "secondary-data", class: "secondary-data" });
     $(secondaryData).appendTo(secondaryDataDiv);
     var secondaryDataEl = document.querySelector("#secondary-data");
     
-    // create links which correspond to the data returned and lead to a title display page
+    // populate the list
     for (var i = 0; i < data.results.length; i++) {
-        secondaryDataEl.innerHTML += "<a onclick='a"+ i + "1' id='a" + i + "1'>" + data.results[i].title + "</a><br>";
+        secondaryDataEl.innerHTML += "<a id='a" + i + "1'>" + data.results[i].title + "</a><br>";
     }
 }
 
 function displayGenresList() {
-    // remove elements on the page first for searching additional times
+    // remove elements on the page first
     $(".main-title").remove();
     $(".secondary-data").remove();
     $(".secondary-img").remove()
 
-    // one primary div which displays a list of genres;
+    // two formatted divs side by side which display a list of sample genres;
     var secondaryDataDiv = $("<div></div>", { id: "secondary-data-div", class: "secondary-data col s6" }); 
     $(secondaryDataDiv).appendTo("#row-2");
     var secondaryDataDiv2 = $("<div></div>", { id: "secondary-data-div-2", class: "secondary-data col s6" });
@@ -261,16 +293,65 @@ function displayGenresList() {
     closeBtnEl.addEventListener("click", clearGenresList);
 }
 
-// query selectors for the search by title form
+// these functions were a quick solution but involve changing our 'save' code
+// and storing all api calls in LS instead, which isn't ideal
+
+//  function moviesFromLocalStorage () {
+//      titleData.forEach(movie => {
+//          var moviebutton = document.createElement("button");
+//          moviebutton.innerText = movie.Title
+//          moviebutton.onclick = searchMovie
+//          document.getElementById("local-search").append(moviebutton);
+//      })
+//  }
+//  moviesFromLocalStorage();
+    
+//  function searchMovie (event) {
+//      console.log(event.target);
+//      var movie = titleData.find(title => title.Title == event.target.innerText);
+//      console.log(movie);
+//      displayMainTitle(movie);
+//  }
+
+function loadButtonsFirst() {
+// this function loads the buttons if there are any in LS on page load
+    window.searchCount = parseInt(window.searchCount);
+    if (window.searchCount > 0) {
+        titleData = localStorage.getItem("titleData");
+        titleData = JSON.parse(titleData);
+        for (let i = 0; i < titleData.length; i++) { 
+            // create a recent button iteration loop with the id# of the buttons
+            var recentBtn = document.createElement("button");
+            recentBtn.textContent = "" + titleData[i].title;
+            var buttonDiv = document.querySelector("#button-div");
+            recentBtn.setAttribute("id", "btn" + (titleData[i].searchCount));
+            recentBtn.classList = "inline waves-effect waves-light btn-small";
+            buttonDiv.appendChild(recentBtn);
+                // jquery button assignments 
+                $(document).on('click','#btn' + (titleData[i].searchCount),function() {
+                    // remove page contents first when clicking recall buttons
+                    $(".main-title").remove();
+                    $(".secondary-data").remove();
+                    $(".secondary-img").remove();
+                    // this function has datapoints from titleData which is from LS on page load, unless it's initial
+                    recallTitleSearch(titleData[i]);
+                });
+        }
+    } 
+}
+// ^
+loadButtonsFirst();
+
+// query selectors for the search form
 var searchFormEl = document.querySelector("#search-form");
 var searchNameEl = document.querySelector("#name");
 var genresIdeasBtn = document.querySelector("#genres-ideas");
 
-// default search is by title
+// default search is by title, genre ideas button is always there
 searchFormEl.addEventListener("submit", formSubmitHandler);
 genresIdeasBtn.addEventListener("click", displayGenresList);
 
-// toggle functionality to change the search type and the API call involved
+// toggle functionality to change the search type and the api call involved
 $("#selection-type").on('change', function() {
     $("#name").attr('placeholder', 'Search ' + $("#selection-type").find(':selected').text());
 
