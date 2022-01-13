@@ -28,14 +28,14 @@ if (window.searchCount === 0) {
 
 // omdb api search for title, returns first result in the primary display via displayMainTitle()
 function getTitle(name) {
-    var apiUrlTitle = "http://www.omdbapi.com/?apikey=" + apiKey + "&s=" + name;
+    var apiUrlTitle = "https://www.omdbapi.com/?apikey=" + apiKey + "&s=" + name;
         fetch(apiUrlTitle)
             .then(response=> response.json())
             .then(data=> {
                 console.log(data);
                 if (data.Response === "True") {
                     var imdbID = data.Search[0].imdbID;
-                    var apiUrlTitle2 = "http://www.omdbapi.com/?apikey=" + apiKey + "&i=" + imdbID + "&plot=full";
+                    var apiUrlTitle2 = "https://www.omdbapi.com/?apikey=" + apiKey + "&i=" + imdbID + "&plot=full";
 
                        fetch(apiUrlTitle2)
                             .then(response => response.json())
