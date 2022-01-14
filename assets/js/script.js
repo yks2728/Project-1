@@ -11,22 +11,36 @@ var apiKey2 = "k_n93546yy";
 
 var searchCount = localStorage.getItem("searchCount");
 var isNewSearch = true;
+var isNewGenre = true;
 
 if (!searchCount) {
     var searchCount = 0;
 }
 
-// initialize empty arrays and obj. if it's an initial search, otherwise get from LS
+// initialize empty arrays and obj. if it's 
+// an initial search, otherwise get from LS
 if (window.searchCount === 0) {
     var titleData = [];
     var dataElement = {};
+    var genreData = [];
+    var genreElement = {};
 } else {
     var titleData = localStorage.getItem(titleData);
     titleData = JSON.parse(titleData);
+    if (!titleData) {
+        var titleData = [];
+    }
+    var genreData = localStorage.getItem(genreData);
+    genreData = JSON.parse(genreData);
+    if (!genreData) {
+        var genreData = [];
+    }
     var dataElement = {};
+    var genreElement = {};
 }
 
-// omdb api search for title, returns first result in the primary display via displayMainTitle()
+// omdb api search for title, returns first result
+// in the primary display via displayMainTitle()
 function getTitle(name) {
     var apiUrlTitle = "https://www.omdbapi.com/?apikey=" + apiKey + "&s=" + name;
         fetch(apiUrlTitle)
@@ -36,8 +50,7 @@ function getTitle(name) {
                 if (data.Response === "True") {
                     var imdbID = data.Search[0].imdbID;
                     var apiUrlTitle2 = "https://www.omdbapi.com/?apikey=" + apiKey + "&i=" + imdbID + "&plot=full";
-
-                       fetch(apiUrlTitle2)
+                        fetch(apiUrlTitle2)
                             .then(response => response.json())
                             .then(data=> {
                                 console.log(data)
@@ -47,9 +60,27 @@ function getTitle(name) {
             });
 }
 
-// imdb api advanced search for genres, use commas and spaces for multiple genres
+// imdb api advanced search for genre(s), 
+// use commas and spaces for multiple genres
 function getGenres(genre) {
     var apiUrlGenre = "https://imdb-api.com/API/AdvancedSearch/" + apiKey2 + "/?genres=" + genre;
+
+        if (genreData.length > 0) {
+            // confirm if genre(s) is(are) a new unique search 
+            // and isn't(aren't) stored already by using a boolean
+            for (i = 0; i < genreData.length; i++) {
+                var string = genreData[i].queryString.replace('?genres=','');
+                if (string === genre) {
+                    isNewGenre = false;
+                    var genreRecallArr = genreData[i];
+                    break;
+                } else {
+                    isNewSearch = true;
+                }
+            }
+        }
+
+    if (isNewGenre === true) {
         fetch(apiUrlGenre)
             .then(response=> response.json())
             .then(data=> {
@@ -60,6 +91,7 @@ function getGenres(genre) {
                     console.log("Error: No results found")
                 }
             });
+    } else { recallGenreSearch(genreRecallArr) };
 }
 
 // used to submit the search for a title via omdb api
@@ -141,7 +173,7 @@ function displayMainTitle(data) {
         var director = data.Director;
         dataElement.director = director;
 
-        var rating = data.Rating;
+        var rating = data.Rated;
         dataElement.rating = rating;
 
         var awards = data.Awards;
@@ -260,6 +292,239 @@ function displayNamesViaGenre(data, genre) {
     for (var i = 0; i < data.results.length; i++) {
         secondaryDataEl.innerHTML += "<a id='a" + i + "1'>" + data.results[i].title + "</a><br>";
     }
+
+    // increment the search count
+    window.searchCount += 1;
+
+    // if the data returned has 50 results, show pg. 2 btn
+    if (data.results.length === 50) {
+        var pg2Button = $("<button></button>", { id: "page-2", class: "inline waves-effect waves-light btn-small" });
+        $(pg2Button).appendTo(secondaryDataDiv);
+        var page = "2";
+        $(document).on('click','#btnPg' + window.searchCount,function() { 
+            getGenrePageX(genre, page);
+        });     
+    }
+
+    // save the listing as a string to be stored
+    var genreListing = secondaryDataEl.innerHTML;
+
+    function saveGenreListing(genreListing, data) {
+        genreElement.queryString = data.queryString;
+        genreElement.genreListing = genreListing;
+        genreElement.searchCount = window.searchCount;
+        genreData.push(genreElement)
+
+        localStorage.setItem("genreData", JSON.stringify(genreData));
+    }
+
+    // add a new button
+        var recentBtn = document.createElement("button");
+        var commaRemoved = genre.replace(",", "");
+        recentBtn.textContent = "" + commaRemoved;
+        var buttonDiv = document.querySelector("#button-div");
+        recentBtn.setAttribute("id", "btn" + window.searchCount)
+        recentBtn.classList = "inline waves-effect waves-light btn-small green lighten-2";
+        buttonDiv.appendChild(recentBtn);
+
+    saveGenreListing(genreListing);
+
+    // refresh and parse the titleData array
+    genreData = localStorage.getItem("genreData")
+    genreData = JSON.parse(genreData);
+
+    // create recent search buttons' "on click" assignments
+    for (let i = 0; i < genreData.length; i++) {
+        $(document).on('click','#btn' + genreData[i].searchCount,function() {
+            // remove whats on the page first
+            $(".main-title").remove();
+            $(".secondary-data").remove();
+            $(".secondary-img").remove();
+            
+            recallGenreSearch(genreData[i]);
+        });
+    }
+}
+
+function recallGenreSearch(arr) {
+    // remove elements on the page first
+    $(".main-title").remove();
+    $(".secondary-data").remove();
+    $(".secondary-img").remove()
+
+    // one div showing search parameters
+    var mainTitleDiv = $("<div></div>", { id: "main-title", class: "main-title col s12 m6 l6 xl6" });
+    $(mainTitleDiv).appendTo("#row-1");
+    var mainTitleData = $("<p></p>", { id: "main-data", class: "main-data" });
+    $(mainTitleData).html("Search: " + arr.queryString.replace('?genres=',''));
+    $(mainTitleData).appendTo(mainTitleDiv);
+
+    // another div showing a list of items which fall under the genre(s)
+    var secondaryDataDiv = $("<div></div>", { id: "secondary-data-div", class: "secondary-data col s12" }); 
+    $(secondaryDataDiv).appendTo("#row-2");
+    var secondaryData = $("<p></p>", { id: "secondary-data", class: "secondary-data" });
+    $(secondaryData).appendTo(secondaryDataDiv);
+    var secondaryDataEl = document.querySelector("#secondary-data");
+    
+    var secondaryDataContent = arr.genreListing;
+    secondaryDataEl.innerHTML = secondaryDataContent;
+
+    // if the data returned has 50 results, show pg. 2 btn
+    if (arr.genreListingPg2) {
+        var pg2Button = $("<button></button>", { id: "page-2", class: "inline waves-effect waves-light btn-small" });
+        $(pg2Button).appendTo(secondaryDataDiv);
+        var page = "2";
+        $(document).on('click','#btnPg' + window.searchCount,function() { 
+            recDisplayPage2(arr);
+        });     
+    }
+}
+
+
+function getGenrePageX(genre, page) {
+    var apiUrlGenrePg2 = "https://imdb-api.com/API/AdvancedSearch/" + apiKey2 + "/?genres=" + genre + "&page=" + page;
+        fetch(apiUrlGenre)
+            .then(response=> response.json())
+            .then(data=> {
+                console.log(data);
+                if (page === "2") {
+                displayPage2(data, genre);
+                } else {
+                displayPage3(data, genre);
+                }
+        });
+}
+
+function displayPage2(data, genre) {
+    $("#secondary-data").remove();
+    $("#btnPg" + window.searchCount).remove();
+
+    var secondaryData = $("<p></p>", { id: "secondary-data", class: "secondary-data" });
+    $(secondaryData).appendTo(secondaryDataDiv);
+    var secondaryDataEl = document.querySelector("#secondary-data");
+
+    // populate the list
+    for (var i = 0; i < data.results.length; i++) {
+        secondaryDataEl.innerHTML += "<a id='a" + i + "1'>" + data.results[i].title + "</a><br>";
+    }
+
+    // if the data returned has 50 results, show pg. 2 btn
+    if (data.results.length === 50) {
+        var pg3Button = $("<button></button>", { id: "page-3", class: "inline waves-effect waves-light btn-small" });
+        $(pg3Button).appendTo(secondaryDataDiv);
+        page = "3";
+        $(document).on('click','#btnPg' + window.searchCount,function() { 
+            getGenrePageX(genre, page);
+        });     
+    }
+
+    // save the listing as a string to be stored
+    var genreListingPg2 = secondaryDataEl.innerHTML;
+
+    function saveGenreListing2(listing) {
+        var pg1 = localStorage.getItem("genreData");
+        JSON.parse(pg1);
+
+        var newPg1 = pg1.length;
+        newPg1 = pg1[newPg1 - 1];
+
+        var saveCount = newPg1.searchCount;
+        var saveListing = newPg1.genreListing;
+        var saveQuery = newPg1.queryString;
+
+        pg1 = pg1.pop();
+        newEl = {};
+        newEl.searchCount = saveCount;
+        newEl.genreListing = saveListing;
+        newEl.genreListingPg2 = listing;
+        newEl.queryString = saveQuery;
+        pg1.push(newEl)
+
+        localStorage.setItem("genreData", JSON.stringify(pg1));
+    }
+
+    saveGenreListing2(genreListingPg2)
+
+    // refresh and parse the titleData array
+    genreData = localStorage.getItem("genreData")
+    genreData = JSON.parse(genreData);
+}
+
+function recDisplayPage2(arr) {
+    $("#secondary-data").remove();
+    $("#btnPg" + window.searchCount).remove();
+
+    var secondaryData = $("<p></p>", { id: "secondary-data", class: "secondary-data" });
+    $(secondaryData).appendTo(secondaryDataDiv);
+    var secondaryDataEl = document.querySelector("#secondary-data");
+
+    secondaryDataEl.innerHTML = arr.genreListingPg2;
+
+    if (arr.genreListingPg3) {
+        var pg3Button = $("<button></button>", { id: "page-3", class: "inline waves-effect waves-light btn-small" });
+        $(pg3Button).appendTo(secondaryDataDiv);
+        $(document).on('click','#btnPg' + window.searchCount,function() { 
+            recDisplayPage3(arr);
+        });     
+    }
+}
+
+function displayPage3(data, genre) {
+    $("#secondary-data").remove();
+    $("#btnPg" + window.searchCount).remove();
+    
+    var secondaryData = $("<p></p>", { id: "secondary-data", class: "secondary-data" });
+    $(secondaryData).appendTo(secondaryDataDiv);
+    var secondaryDataEl = document.querySelector("#secondary-data");
+    
+    // populate the list
+    for (var i = 0; i < data.results.length; i++) {
+        secondaryDataEl.innerHTML += "<a id='a" + i + "1'>" + data.results[i].title + "</a><br>";
+    }
+
+    // save the listing as a string to be stored
+    var genreListingPg3 = secondaryDataEl.innerHTML;
+
+    function saveGenreListing3(listing) {
+        var pg3 = localStorage.getItem("genreData");
+        JSON.parse(pg3);
+
+        var newPg3 = pg3.length;
+        newPg3 = pg3[newPg3 - 1];
+
+        var saveCount = newPg3.searchCount;
+        var saveListing = newPg3.genreListing;
+        var saveListing2 = newPg3.genreListingPg2;
+        var saveQuery = newPg3.queryString;
+
+        pg3 = pg3.pop();
+        newEl = {};
+        newEl.searchCount = saveCount;
+        newEl.genreListing = saveListing;
+        newEl.genreListingPg2 = saveListing2;
+        newEl.genreListingPg3 = listing;
+        newEl.queryString = saveQuery;
+        pg3.push(newEl);
+
+        localStorage.setItem("genreData", JSON.stringify(pg3));
+    }
+
+    saveGenreListing3(genreListingPg3)
+
+    // refresh and parse the titleData array
+    genreData = localStorage.getItem("genreData")
+    genreData = JSON.parse(genreData);
+}
+
+function recDisplayPage3(arr) {
+    $("#secondary-data").remove();
+    $("#btnPg" + window.searchCount).remove();
+    
+    var secondaryData = $("<p></p>", { id: "secondary-data", class: "secondary-data" });
+    $(secondaryData).appendTo(secondaryDataDiv);
+    var secondaryDataEl = document.querySelector("#secondary-data");
+    
+    secondaryDataEl.innerHTML = arr.genreListingPg3;
 }
 
 function displayGenresList() {
@@ -268,22 +533,24 @@ function displayGenresList() {
     $(".secondary-data").remove();
     $(".secondary-img").remove()
 
-    // two formatted divs side by side which display a list of sample genres;
+    // two formatted divs side by side which display a list of sample genres
     var secondaryDataDiv = $("<div></div>", { id: "secondary-data-div", class: "secondary-data col s6" }); 
     $(secondaryDataDiv).appendTo("#row-2");
     var secondaryDataDiv2 = $("<div></div>", { id: "secondary-data-div-2", class: "secondary-data col s6" });
     $(secondaryDataDiv2).appendTo("#row-2");
     var secondaryData = $("<p></p>", { id: "secondary-data", class: "secondary-data gold center right" });
     var secondaryData2 = $("<p></p>", { id: "secondary-data-2", class: "secondary-data gold center left" });
+    var secondaryBtnDiv = $("<div></div>", { class: "secondary-data col s12" }); 
+    $(secondaryBtnDiv).appendTo("#row-2");
 
     // list of genres
-    $(secondaryData).html("Use commas for multiples: <br>Action<br>Adventure<br>Animation<br>Biography<br>Comedy<br>Crime<br>Documentary<br>Drama<br>Family<br>Fantasy<br>Film-Noir<br>Game-Show<br>History");
+    $(secondaryData).html("<span style='color: #9c9c9c'>Use commas for multiple genres: </span><br>Action<br>Adventure<br>Animation<br>Biography<br>Comedy<br>Crime<br>Documentary<br>Drama<br>Family<br>Fantasy<br>Film-Noir<br>Game-Show<br>History");
     $(secondaryData).appendTo(secondaryDataDiv);
     $(secondaryData2).html("<br>Horror<br>Music<br>Musical<br>Mystery<br>News<br>Reality-TV<br>Romance<br>Sci-Fi<br>Sport<br>Talk-Show<br>Thriller<br>War<br>Western");
     $(secondaryData2).appendTo(secondaryDataDiv2);
     var closeBtn = $("<button></button>", { id: "close-btn", class: "inline waves-effect waves-light btn-small" });
     $(closeBtn).html("Close");
-    $(closeBtn).appendTo(secondaryDataDiv);
+    $(closeBtn).appendTo(secondaryBtnDiv);
 
     function clearGenresList() {
         $(".secondary-data").remove();
