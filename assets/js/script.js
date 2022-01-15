@@ -75,7 +75,7 @@ function getGenres(genre) {
                     var genreRecallArr = genreData[i];
                     break;
                 } else {
-                    isNewSearch = true;
+                    isNewGenre = true;
                 }
             }
         }
@@ -299,6 +299,7 @@ function displayNamesViaGenre(data, genre) {
     // if the data returned has 50 results, show pg. 2 btn
     if (data.results.length === 50) {
         var pg2Button = $("<button></button>", { id: "page-2", class: "inline waves-effect waves-light btn-small" });
+        pg2Button.textContent = "Load next page"
         $(pg2Button).appendTo(secondaryDataDiv);
         var page = "2";
         $(document).on('click','#btnPg' + window.searchCount,function() { 
@@ -320,14 +321,14 @@ function displayNamesViaGenre(data, genre) {
 
     // add a new button
         var recentBtn = document.createElement("button");
-        var commaRemoved = genre.replace(",", "");
-        recentBtn.textContent = "" + commaRemoved;
+        var genresFormatted = data.queryString.replace('?genres=','');
+        recentBtn.textContent = "" + genresFormatted;
         var buttonDiv = document.querySelector("#button-div");
         recentBtn.setAttribute("id", "btn" + window.searchCount)
         recentBtn.classList = "inline waves-effect waves-light btn-small green lighten-2";
         buttonDiv.appendChild(recentBtn);
 
-    saveGenreListing(genreListing);
+    saveGenreListing(genreListing, data);
 
     // refresh and parse the titleData array
     genreData = localStorage.getItem("genreData")
@@ -369,11 +370,12 @@ function recallGenreSearch(arr) {
     var secondaryDataContent = arr.genreListing;
     secondaryDataEl.innerHTML = secondaryDataContent;
 
-    // if the data returned has 50 results, show pg. 2 btn
+    // if there's a page 2 saved, bring up a button for that page
     if (arr.genreListingPg2) {
         var pg2Button = $("<button></button>", { id: "page-2", class: "inline waves-effect waves-light btn-small" });
+        pg2Button.textContent = "Show next page"
         $(pg2Button).appendTo(secondaryDataDiv);
-        var page = "2";
+
         $(document).on('click','#btnPg' + window.searchCount,function() { 
             recDisplayPage2(arr);
         });     
@@ -411,6 +413,7 @@ function displayPage2(data, genre) {
     // if the data returned has 50 results, show pg. 2 btn
     if (data.results.length === 50) {
         var pg3Button = $("<button></button>", { id: "page-3", class: "inline waves-effect waves-light btn-small" });
+        pg3Button.textContent = "Load next page"
         $(pg3Button).appendTo(secondaryDataDiv);
         page = "3";
         $(document).on('click','#btnPg' + window.searchCount,function() { 
@@ -462,6 +465,7 @@ function recDisplayPage2(arr) {
 
     if (arr.genreListingPg3) {
         var pg3Button = $("<button></button>", { id: "page-3", class: "inline waves-effect waves-light btn-small" });
+        pg3Button.textContent = "Show next page"
         $(pg3Button).appendTo(secondaryDataDiv);
         $(document).on('click','#btnPg' + window.searchCount,function() { 
             recDisplayPage3(arr);
@@ -548,7 +552,7 @@ function displayGenresList() {
     $(secondaryData).appendTo(secondaryDataDiv);
     $(secondaryData2).html("<br>Horror<br>Music<br>Musical<br>Mystery<br>News<br>Reality-TV<br>Romance<br>Sci-Fi<br>Sport<br>Talk-Show<br>Thriller<br>War<br>Western");
     $(secondaryData2).appendTo(secondaryDataDiv2);
-    var closeBtn = $("<button></button>", { id: "close-btn", class: "inline waves-effect waves-light btn-small" });
+    var closeBtn = $("<button></button>", { id: "close-btn", class: "inline waves-effect waves-light btn-small light-blue darken-3" });
     $(closeBtn).html("Close");
     $(closeBtn).appendTo(secondaryBtnDiv);
 
