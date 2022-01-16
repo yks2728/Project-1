@@ -10,6 +10,7 @@ var apiKey = "90e49496";
 var apiKey2 = "k_n93546yy";
 
 var searchCount = localStorage.getItem("searchCount");
+searchCount = parseInt(searchCount)
 var isNewSearch = true;
 var isNewGenre = true;
 
@@ -23,20 +24,35 @@ if (window.searchCount === 0) {
     var titleData = [];
     var dataElement = {};
     var genreData = [];
-    var genreElement = {};
+    var genreElement = {
+        results: []
+    };
 } else {
-    var titleData = localStorage.getItem(titleData);
+    var titleData = localStorage.getItem("titleData");
     titleData = JSON.parse(titleData);
     if (!titleData) {
         var titleData = [];
     }
-    var genreData = localStorage.getItem(genreData);
+
+    var genreData = localStorage.getItem("genreData");
     genreData = JSON.parse(genreData);
     if (!genreData) {
         var genreData = [];
     }
     var dataElement = {};
-    var genreElement = {};
+    var genreElement = {
+        results: []
+    };
+}
+
+// from stack overflow, for capitalizing
+function toTitleCase(str) {
+    return str.replace(
+      /\w\S*/g,
+      function(txt) {
+        return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+      }
+    );
 }
 
 // omdb api search for title, returns first result
@@ -61,15 +77,22 @@ function getTitle(name) {
 }
 
 // imdb api advanced search for genre(s), 
-// use commas and spaces for multiple genres
+// use commas for multiple genres, format spaces out
 function getGenres(genre) {
-    var apiUrlGenre = "https://imdb-api.com/API/AdvancedSearch/" + apiKey2 + "/?genres=" + genre;
-
+    var apiUrlGenre = "https://imdb-api.com/API/AdvancedSearch/" + apiKey2 + "/?genres=" + genre + "&count=150";
+    apiUrlGenre = apiUrlGenre.replace(/ /g, "");
         if (genreData.length > 0) {
             // confirm if genre(s) is(are) a new unique search 
             // and isn't(aren't) stored already by using a boolean
             for (i = 0; i < genreData.length; i++) {
                 var string = genreData[i].queryString.replace('?genres=','');
+                string = string.replace('%20','');
+                string = string.replace('%20','');
+                string = string.replace('&count=150', '')
+                string = string.replace(/,/g, ', ')
+            // this may be redundant toTileCase
+                string = toTitleCase(string);
+                string = string.replace(/\-[a-z]/g, match => match.toUpperCase());
                 if (string === genre) {
                     isNewGenre = false;
                     var genreRecallArr = genreData[i];
@@ -85,6 +108,7 @@ function getGenres(genre) {
             .then(response=> response.json())
             .then(data=> {
                 console.log(data);
+            
                 if (data.results.length > 0) {
                     displayNamesViaGenre(data, genre);
                 } else { 
@@ -113,6 +137,8 @@ var formSubmitHandler2 = function(event) {
 
     var searchGenre = searchNameEl.value.trim();
     if (searchGenre) {
+        searchGenre = toTitleCase(searchGenre);
+        searchGenre = searchGenre.replace(/\-[a-z]/g, match => match.toUpperCase());
         getGenres(searchGenre);
         searchNameEl.value = "";
     } else {
@@ -125,6 +151,11 @@ function displayMainTitle(data) {
     $(".main-title").remove();
     $(".secondary-data").remove();
     $(".secondary-img").remove();
+    $("#page-1").remove();
+    $("#page-2").remove();
+    $("#page-2b").remove();
+    $("#page-3").remove();
+    $("#page-3b").remove();
 
     // one div showing title and year released
     var mainTitleDiv = $("<div></div>", { id: "main-title", class: "main-title col s12 m6 l6 xl6" });
@@ -245,6 +276,11 @@ function recallTitleSearch(arr) {
     $(".main-title").remove();
     $(".secondary-data").remove();
     $(".secondary-img").remove();
+    $("#page-1").remove();
+    $("#page-2").remove();
+    $("#page-2b").remove();
+    $("#page-3").remove();
+    $("#page-3b").remove();
 
     // one div showing title and year released
     var mainTitleDiv = $("<div></div>", { id: "main-title", class: "main-title col s12 m6 l6 xl6" });
@@ -273,6 +309,11 @@ function displayNamesViaGenre(data, genre) {
     $(".main-title").remove();
     $(".secondary-data").remove();
     $(".secondary-img").remove()
+    $("#page-1").remove();
+    $("#page-2").remove();
+    $("#page-2b").remove();
+    $("#page-3").remove();
+    $("#page-3b").remove();
 
     // one div showing search parameters
     var mainTitleDiv = $("<div></div>", { id: "main-title", class: "main-title col s12 m6 l6 xl6" });
@@ -289,59 +330,61 @@ function displayNamesViaGenre(data, genre) {
     var secondaryDataEl = document.querySelector("#secondary-data");
     
     // populate the list
-    for (var i = 0; i < data.results.length; i++) {
+    for (var i = 0; i < data.results.length && i < 50; i++) {
         secondaryDataEl.innerHTML += "<a id='a" + i + "1'>" + data.results[i].title + "</a><br>";
     }
 
     // increment the search count
     window.searchCount += 1;
 
-    // if the data returned has 50 results, show pg. 2 btn
-    if (data.results.length === 50) {
-        var pg2Button = $("<button></button>", { id: "page-2", class: "inline waves-effect waves-light btn-small" });
-        pg2Button.textContent = "Load next page"
-        $(pg2Button).appendTo(secondaryDataDiv);
-        var page = "2";
-        $(document).on('click','#btnPg' + window.searchCount,function() { 
-            getGenrePageX(genre, page);
-        });     
-    }
-
-    // save the listing as a string to be stored
-    var genreListing = secondaryDataEl.innerHTML;
-
-    function saveGenreListing(genreListing, data) {
+    function saveGenreListing(genreElement) {
+        var genreElement = {
+            results: []
+        };
         genreElement.queryString = data.queryString;
-        genreElement.genreListing = genreListing;
+        localStorage.setItem("searchCount", window.searchCount)
+        // save the listing as an array to be stored
+            for (let i = 0; i < data.results.length; i++) {
+                genreElement.results.push(data.results[i]);
+            }
         genreElement.searchCount = window.searchCount;
-        genreData.push(genreElement)
-
-        localStorage.setItem("genreData", JSON.stringify(genreData));
+        genreData.push(genreElement);
+        localStorage.setItem('genreData', JSON.stringify(genreData));
     }
 
     // add a new button
         var recentBtn = document.createElement("button");
         var genresFormatted = data.queryString.replace('?genres=','');
+        genresFormatted = genresFormatted.replace('%20','');
+        genresFormatted = genresFormatted.replace('%20','');
+        genresFormatted = genresFormatted.replace('&count=150', '')
         recentBtn.textContent = "" + genresFormatted;
         var buttonDiv = document.querySelector("#button-div");
         recentBtn.setAttribute("id", "btn" + window.searchCount)
         recentBtn.classList = "inline waves-effect waves-light btn-small green lighten-2";
         buttonDiv.appendChild(recentBtn);
 
-    saveGenreListing(genreListing, data);
+    saveGenreListing();
 
     // refresh and parse the titleData array
     genreData = localStorage.getItem("genreData")
     genreData = JSON.parse(genreData);
 
+    // if the data returned has 50 results, show pg. 2 btn
+    if (data.results.length > 50) {
+        var pg2Button = $("<button></button>", { id: "page-2", class: "inline waves-effect waves-light btn-small" });
+        $(pg2Button).text("Load next page");
+        $(pg2Button).appendTo(secondaryDataDiv);
+        var page = "2";
+        
+        $(document).on('click','#page-2',function() { 
+            recDisplayPage2(genreData[genreData.length - 1]);
+        });     
+    }
+
     // create recent search buttons' "on click" assignments
     for (let i = 0; i < genreData.length; i++) {
-        $(document).on('click','#btn' + genreData[i].searchCount,function() {
-            // remove whats on the page first
-            $(".main-title").remove();
-            $(".secondary-data").remove();
-            $(".secondary-img").remove();
-            
+        $(document).on('click','#btn' + genreData[i].searchCount,function() {  
             recallGenreSearch(genreData[i]);
         });
     }
@@ -352,12 +395,21 @@ function recallGenreSearch(arr) {
     $(".main-title").remove();
     $(".secondary-data").remove();
     $(".secondary-img").remove()
+    $("#page-1").remove();
+    $("#page-2").remove();
+    $("#page-2b").remove();
+    $("#page-3").remove();
+    $("#page-3b").remove();
 
     // one div showing search parameters
     var mainTitleDiv = $("<div></div>", { id: "main-title", class: "main-title col s12 m6 l6 xl6" });
     $(mainTitleDiv).appendTo("#row-1");
     var mainTitleData = $("<p></p>", { id: "main-data", class: "main-data" });
-    $(mainTitleData).html("Search: " + arr.queryString.replace('?genres=',''));
+    var string = arr.queryString.replace('?genres=','');
+    string = string.replace('%20','');
+    string = string.replace('%20','');
+    string = string.replace('&count=150', '')
+    $(mainTitleData).html("Search: " + string);
     $(mainTitleData).appendTo(mainTitleDiv);
 
     // another div showing a list of items which fall under the genre(s)
@@ -366,169 +418,89 @@ function recallGenreSearch(arr) {
     var secondaryData = $("<p></p>", { id: "secondary-data", class: "secondary-data" });
     $(secondaryData).appendTo(secondaryDataDiv);
     var secondaryDataEl = document.querySelector("#secondary-data");
+
+    var placekeeper = 0;
+    for (let i = 0; i < arr.results.length && i < 50; i++) {
+        secondaryDataEl.innerHTML += "<a id='a" + i + "1'>" + arr.results[i].title + "</a><br>";
+        placekeeper = i;
+    }
     
-    var secondaryDataContent = arr.genreListing;
-    secondaryDataEl.innerHTML = secondaryDataContent;
-
-    // if there's a page 2 saved, bring up a button for that page
-    if (arr.genreListingPg2) {
-        var pg2Button = $("<button></button>", { id: "page-2", class: "inline waves-effect waves-light btn-small" });
-        pg2Button.textContent = "Show next page"
-        $(pg2Button).appendTo(secondaryDataDiv);
-
-        $(document).on('click','#btnPg' + window.searchCount,function() { 
+    if (placekeeper > 0 && placekeeper < 50) {
+        var pg1Button = $("<button></button>", { id: "page-1", class: "inline waves-effect waves-light btn-small" });
+        $(pg1Button).text("Show next page");
+        $(pg1Button).appendTo(secondaryDataDiv)
+        page = "2"
+        $(document).on('click','#page-1',function() { 
             recDisplayPage2(arr);
-        });     
-    }
-}
-
-
-function getGenrePageX(genre, page) {
-    var apiUrlGenrePg2 = "https://imdb-api.com/API/AdvancedSearch/" + apiKey2 + "/?genres=" + genre + "&page=" + page;
-        fetch(apiUrlGenre)
-            .then(response=> response.json())
-            .then(data=> {
-                console.log(data);
-                if (page === "2") {
-                displayPage2(data, genre);
-                } else {
-                displayPage3(data, genre);
-                }
         });
-}
-
-function displayPage2(data, genre) {
-    $("#secondary-data").remove();
-    $("#btnPg" + window.searchCount).remove();
-
-    var secondaryData = $("<p></p>", { id: "secondary-data", class: "secondary-data" });
-    $(secondaryData).appendTo(secondaryDataDiv);
-    var secondaryDataEl = document.querySelector("#secondary-data");
-
-    // populate the list
-    for (var i = 0; i < data.results.length; i++) {
-        secondaryDataEl.innerHTML += "<a id='a" + i + "1'>" + data.results[i].title + "</a><br>";
     }
-
-    // if the data returned has 50 results, show pg. 2 btn
-    if (data.results.length === 50) {
-        var pg3Button = $("<button></button>", { id: "page-3", class: "inline waves-effect waves-light btn-small" });
-        pg3Button.textContent = "Load next page"
-        $(pg3Button).appendTo(secondaryDataDiv);
-        page = "3";
-        $(document).on('click','#btnPg' + window.searchCount,function() { 
-            getGenrePageX(genre, page);
-        });     
-    }
-
-    // save the listing as a string to be stored
-    var genreListingPg2 = secondaryDataEl.innerHTML;
-
-    function saveGenreListing2(listing) {
-        var pg1 = localStorage.getItem("genreData");
-        JSON.parse(pg1);
-
-        var newPg1 = pg1.length;
-        newPg1 = pg1[newPg1 - 1];
-
-        var saveCount = newPg1.searchCount;
-        var saveListing = newPg1.genreListing;
-        var saveQuery = newPg1.queryString;
-
-        pg1 = pg1.pop();
-        newEl = {};
-        newEl.searchCount = saveCount;
-        newEl.genreListing = saveListing;
-        newEl.genreListingPg2 = listing;
-        newEl.queryString = saveQuery;
-        pg1.push(newEl)
-
-        localStorage.setItem("genreData", JSON.stringify(pg1));
-    }
-
-    saveGenreListing2(genreListingPg2)
-
-    // refresh and parse the titleData array
-    genreData = localStorage.getItem("genreData")
-    genreData = JSON.parse(genreData);
 }
 
 function recDisplayPage2(arr) {
     $("#secondary-data").remove();
-    $("#btnPg" + window.searchCount).remove();
+    $("#page-1").remove();
+    $("#page-2").remove();
+    $("#page-2b").remove();
+    $("#page-3").remove();
+    $("#page-3b").remove();
 
+    var secondaryDataDiv = document.querySelector("#secondary-data-div");
     var secondaryData = $("<p></p>", { id: "secondary-data", class: "secondary-data" });
     $(secondaryData).appendTo(secondaryDataDiv);
     var secondaryDataEl = document.querySelector("#secondary-data");
 
-    secondaryDataEl.innerHTML = arr.genreListingPg2;
+    var placekeeper = 0;
+    for (let i = 50; i < arr.results.length && i < 100; i++) {
+        secondaryDataEl.innerHTML += "<a id='a" + i + "1'>" + arr.results[i].title + "</a><br>";
+        placekeeper = i;
+    }
 
-    if (arr.genreListingPg3) {
-        var pg3Button = $("<button></button>", { id: "page-3", class: "inline waves-effect waves-light btn-small" });
-        pg3Button.textContent = "Show next page"
-        $(pg3Button).appendTo(secondaryDataDiv);
-        $(document).on('click','#btnPg' + window.searchCount,function() { 
+    if (placekeeper > 50 && placekeeper < 100) {
+        var pg2ButtonB = $("<button></button>", { id: "page-2b", class: "inline waves-effect waves-light btn-small" });
+        $(pg2ButtonB).text("Show previous page");
+        $(pg2ButtonB).appendTo(secondaryDataDiv);
+        page = "1"
+        $(document).on('click', '#page-2b', function() {
+            recallGenreSearch(arr);
+        });
+        var pg2Button = $("<button></button>", { id: "page-2", class: "inline waves-effect waves-light btn-small" });
+        $(pg2Button).text("Show next page");
+        $(pg2Button).appendTo(secondaryDataDiv)
+        page = "3"
+        $(document).on('click','#page-2',function() { 
             recDisplayPage3(arr);
-        });     
-    }
-}
-
-function displayPage3(data, genre) {
-    $("#secondary-data").remove();
-    $("#btnPg" + window.searchCount).remove();
-    
-    var secondaryData = $("<p></p>", { id: "secondary-data", class: "secondary-data" });
-    $(secondaryData).appendTo(secondaryDataDiv);
-    var secondaryDataEl = document.querySelector("#secondary-data");
-    
-    // populate the list
-    for (var i = 0; i < data.results.length; i++) {
-        secondaryDataEl.innerHTML += "<a id='a" + i + "1'>" + data.results[i].title + "</a><br>";
-    }
-
-    // save the listing as a string to be stored
-    var genreListingPg3 = secondaryDataEl.innerHTML;
-
-    function saveGenreListing3(listing) {
-        var pg3 = localStorage.getItem("genreData");
-        JSON.parse(pg3);
-
-        var newPg3 = pg3.length;
-        newPg3 = pg3[newPg3 - 1];
-
-        var saveCount = newPg3.searchCount;
-        var saveListing = newPg3.genreListing;
-        var saveListing2 = newPg3.genreListingPg2;
-        var saveQuery = newPg3.queryString;
-
-        pg3 = pg3.pop();
-        newEl = {};
-        newEl.searchCount = saveCount;
-        newEl.genreListing = saveListing;
-        newEl.genreListingPg2 = saveListing2;
-        newEl.genreListingPg3 = listing;
-        newEl.queryString = saveQuery;
-        pg3.push(newEl);
-
-        localStorage.setItem("genreData", JSON.stringify(pg3));
-    }
-
-    saveGenreListing3(genreListingPg3)
-
-    // refresh and parse the titleData array
-    genreData = localStorage.getItem("genreData")
-    genreData = JSON.parse(genreData);
+        });
+    }  
 }
 
 function recDisplayPage3(arr) {
     $("#secondary-data").remove();
-    $("#btnPg" + window.searchCount).remove();
+    $("#page-1").remove();
+    $("#page-2").remove();
+    $("#page-2b").remove();
+    $("#page-3").remove();
+    $("#page-3b").remove();
     
+    var secondaryDataDiv = document.querySelector("#secondary-data-div");
     var secondaryData = $("<p></p>", { id: "secondary-data", class: "secondary-data" });
     $(secondaryData).appendTo(secondaryDataDiv);
     var secondaryDataEl = document.querySelector("#secondary-data");
     
-    secondaryDataEl.innerHTML = arr.genreListingPg3;
+    var placekeeper = 0;
+    for (let i = 100; i < arr.results.length && i < 150; i++) {
+        secondaryDataEl.innerHTML += "<a id='a" + i + "1'>" + arr.results[i].title + "</a><br>";
+        placekeeper = i;
+    }
+
+    if (placekeeper > 100 && placekeeper < 150) {
+        var pg3ButtonB = $("<button></button>", { id: "page-3b", class: "inline waves-effect waves-light btn-small" });
+        $(pg3ButtonB).text("Show previous page");
+        $(pg3ButtonB).appendTo(secondaryDataDiv);
+        page = "2";
+        $(document).on('click','#page-3b',function() { 
+            recDisplayPage2(arr);
+        });     
+    }
 }
 
 function displayGenresList() {
@@ -586,10 +558,7 @@ function displayGenresList() {
 
 function loadButtonsFirst() {
 // this function loads the buttons if there are any in LS on page load
-    window.searchCount = parseInt(window.searchCount);
     if (window.searchCount > 0) {
-        titleData = localStorage.getItem("titleData");
-        titleData = JSON.parse(titleData);
         for (let i = 0; i < titleData.length; i++) { 
             // create a recent button iteration loop with the id# of the buttons
             var recentBtn = document.createElement("button");
@@ -608,7 +577,25 @@ function loadButtonsFirst() {
                     recallTitleSearch(titleData[i]);
                 });
         }
-    } 
+
+        for (let i = 0; i < genreData.length; i++) {
+            var recentBtn = document.createElement("button");
+            var string = genreData[i].queryString.replace('?genres=','');
+            string = string.replace('%20','');
+            string = string.replace('%20','');
+            string = string.replace('&count=150', '')
+            recentBtn.textContent = "" + string;
+            var buttonDiv = document.querySelector("#button-div");
+            recentBtn.setAttribute("id", "btn" + (genreData[i].searchCount));
+            recentBtn.classList = "inline waves-effect waves-light btn-small green lighten-2"
+            buttonDiv.appendChild(recentBtn);
+                // jquery button assignments 
+                $(document).on('click','#btn' + (genreData[i].searchCount),function() {
+                    // this function has datapoints from genreData
+                    recallGenreSearch(genreData[i]);
+                });
+        }
+    }
 }
 // ^
 loadButtonsFirst();
