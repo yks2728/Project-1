@@ -2,14 +2,20 @@
 
 ## Use our handy scanner to search for information on your favorite movies and tv shows
 
-### You can find out who stars in them, if they received any award nominations, the genre's, and more
+### Feature: Search for a title and find information about a particular title such as Actor's, Genre, and Awards.
 
-#### Technologies used: Materialize, Jquery, Modals
+#### Feature: Search for a Genre and find a random list of movies related to that Genre.
+
+##### Feature: Pull up previously searched titles and genres by clicking on buttons below the Search bar which will load the previous search.
+
+##### Feature: Click on Buttons for top 100 TV Shows and movies to pull up of list of each one.
+
+###### Technologies used: Materialize, Jquery, Modals, OMDB API, IMDB API
 
 
 ![alt text][screenshot-1]
 
-[screenshot-1]:./assets/images/screenshot-of-deployed-project-1-application.PNG
+[screenshot-1]:./assets/images/screenshot-of-deployed-final-project-1-application.PNG
 
 [Link to Deployed Application](https://yks2728.github.io/Screen-Title-Scanner/)
 
