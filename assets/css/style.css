@@ -153,6 +153,36 @@ form {
     padding-left: 55px;
 }
 
+.new-div {
+    margin-top: 5px !important;
+    margin-bottom: 0px !important;
+    text-align: center;
+}
+
+.padding {
+    margin-left: 55px;
+}
+
+.style1 {
+    color: #0b69b1;
+}
+
+.style2 {
+    color: #0277bd;
+}
+
+.style3 {
+    color: #0288d1;
+}
+
+.style4 {
+    color:#2a67cf;
+}
+
+.style5 {
+    color: #1976d2 ;
+}
+
 .gold {
     font-size: 24px;
     color: #FFD700 !important;
@@ -191,6 +221,10 @@ form {
     .secondary-data {
         padding-left: 0px;
         font-size: 18.1px;
+    }
+
+    .padding {
+        margin-left: 0px;
     }
 }
 
